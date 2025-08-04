@@ -15,6 +15,8 @@ import Settings from "./pages/Settings";
 import Staff from "./pages/Staff";
 import Reports from "./pages/Reports";
 import Features from "./pages/Features";
+import Communication from "./pages/Communication";
+import Inventory from "./pages/Inventory";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +40,8 @@ const App = () => (
             <Route path="/staff" element={<Staff />} />
             <Route path="/reports" element={<Reports />} />
             <Route path="/features" element={<Features />} />
+            <Route path="/communication" element={<Communication />} />
+            <Route path="/inventory" element={<Inventory />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
