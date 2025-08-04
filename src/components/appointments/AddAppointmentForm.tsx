@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -15,7 +16,6 @@ import { ar } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-import { toast } from "sonner";
 
 const formSchema = z.object({
   patient_id: z.string().min(1, "يجب اختيار مريض"),
@@ -33,8 +33,9 @@ interface AddAppointmentFormProps {
   onSuccess: () => void;
 }
 
-export const AddAppointmentForm = ({ onSuccess }: AddAppointmentFormProps) => {
+export default function AddAppointmentForm({ onSuccess }: AddAppointmentFormProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
   const { data: patients = [] } = useQuery({
     queryKey: ['patients'],
@@ -79,11 +80,18 @@ export const AddAppointmentForm = ({ onSuccess }: AddAppointmentFormProps) => {
 
       if (error) throw error;
 
-      toast.success("تم إضافة الموعد بنجاح");
+      toast({
+        title: "تم إضافة الموعد بنجاح",
+        description: "تم حفظ بيانات الموعد الجديد",
+      });
       onSuccess();
     } catch (error) {
       console.error('Error adding appointment:', error);
-      toast.error("حدث خطأ أثناء إضافة الموعد");
+      toast({
+        title: "خطأ في إضافة الموعد",
+        description: "حدث خطأ أثناء إضافة الموعد",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }

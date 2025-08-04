@@ -12,8 +12,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
-import { AddAppointmentForm } from "@/components/appointments/AddAppointmentForm";
-import { EditAppointmentForm } from "@/components/appointments/EditAppointmentForm";
+import AddAppointmentForm from "@/components/appointments/AddAppointmentForm";
+import EditAppointmentForm from "@/components/appointments/EditAppointmentForm";
 import { AppointmentDetails } from "@/components/appointments/AppointmentDetails";
 
 interface Appointment {

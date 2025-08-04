@@ -48,6 +48,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { icon: FileText, label: "العلاجات", href: "/treatments" },
     { icon: Camera, label: "الصور الطبية", href: "/images" },
     { icon: DollarSign, label: "الفواتير", href: "/billing" },
+    { icon: UserCheck, label: "الموظفين", href: "/staff" },
+    { icon: FileText, label: "التقارير", href: "/reports" },
     { icon: Settings, label: "الإعدادات", href: "/settings" },
   ];
 

@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -15,7 +16,6 @@ import { ar } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-import { toast } from "sonner";
 
 const formSchema = z.object({
   patient_id: z.string().min(1, "يجب اختيار مريض"),
@@ -44,8 +44,9 @@ interface EditAppointmentFormProps {
   onSuccess: () => void;
 }
 
-export const EditAppointmentForm = ({ appointment, onSuccess }: EditAppointmentFormProps) => {
+export default function EditAppointmentForm({ appointment, onSuccess }: EditAppointmentFormProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
   const { data: patients = [] } = useQuery({
     queryKey: ['patients'],
@@ -99,11 +100,18 @@ export const EditAppointmentForm = ({ appointment, onSuccess }: EditAppointmentF
 
       if (error) throw error;
 
-      toast.success("تم تحديث الموعد بنجاح");
+      toast({
+        title: "تم تحديث الموعد بنجاح",
+        description: "تم حفظ التغييرات بنجاح",
+      });
       onSuccess();
     } catch (error) {
       console.error('Error updating appointment:', error);
-      toast.error("حدث خطأ أثناء تحديث الموعد");
+      toast({
+        title: "خطأ في تحديث الموعد",
+        description: "حدث خطأ أثناء تحديث الموعد",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
