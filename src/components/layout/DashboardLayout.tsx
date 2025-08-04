@@ -56,7 +56,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-reverse space-x-4">
               <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-                دنتال برو
+                دنتال برو 
               </h1>
               <Heart className="h-8 w-8 text-blue-600" />
             </div>
