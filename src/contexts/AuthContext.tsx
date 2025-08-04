@@ -40,9 +40,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .from("profiles")
         .select("*")
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle();
       
-      if (error && error.code !== "PGRST116") {
+      if (error) {
         console.error("Error fetching profile:", error);
         return;
       }
