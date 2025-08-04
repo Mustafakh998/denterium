@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -32,8 +32,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<any>(null);
   const { toast } = useToast();
 
-  const refreshProfile = async () => {
-    if (!user) return;
+  const refreshProfile = useCallback(async () => {
+    if (!user) {
+      console.log("No user found, skipping profile fetch");
+      return;
+    }
+    
+    console.log("Fetching profile for user:", user.id);
     
     try {
       const { data, error } = await supabase
@@ -42,30 +47,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .eq("user_id", user.id)
         .maybeSingle();
       
+      console.log("Profile fetch result:", { data, error });
+      
       if (error) {
         console.error("Error fetching profile:", error);
         return;
       }
       
+      console.log("Setting profile:", data);
       setProfile(data);
     } catch (error) {
       console.error("Error in refreshProfile:", error);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
+    let mounted = true;
+    
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log("Auth state changed:", event, session?.user?.id);
+        if (!mounted) return;
+        
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
         
         if (session?.user) {
-          // Defer profile fetch to avoid auth state listener issues
-          setTimeout(() => {
-            refreshProfile();
-          }, 0);
+          // Immediately fetch profile without setTimeout
+          refreshProfile();
         } else {
           setProfile(null);
         }
@@ -74,19 +85,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log("Initial session check:", session?.user?.id);
+      if (!mounted) return;
+      
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
       
       if (session?.user) {
-        setTimeout(() => {
-          refreshProfile();
-        }, 0);
+        refreshProfile();
       }
     });
 
-    return () => subscription.unsubscribe();
-  }, []);
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, [refreshProfile]); // Include refreshProfile in dependencies
 
   const signIn = async (email: string, password: string) => {
     try {

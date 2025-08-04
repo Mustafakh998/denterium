@@ -60,7 +60,11 @@ export default function Patients() {
   }, [patients, searchTerm]);
 
   const fetchPatients = async () => {
-    if (!profile?.clinic_id) return;
+    console.log("fetchPatients called, profile:", profile);
+    if (!profile?.clinic_id) {
+      console.log("No clinic_id, skipping fetch");
+      return;
+    }
 
     try {
       setLoading(true);
