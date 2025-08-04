@@ -136,45 +136,45 @@ export default function DashboardStats() {
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       <StatCard
-        title="Total Patients"
+        title="إجمالي المرضى"
         value={stats.totalPatients}
         icon={Users}
-        change="+12% from last month"
+        change="+12% من الشهر الماضي"
         changeType="positive"
       />
       <StatCard
-        title="Today's Appointments"
+        title="مواعيد اليوم"
         value={stats.todayAppointments}
         icon={Calendar}
-        change="3 completed"
+        change="3 مكتملة"
         changeType="neutral"
       />
       <StatCard
-        title="Monthly Revenue"
+        title="الإيرادات الشهرية"
         value={formatCurrency(stats.monthlyRevenue)}
         icon={DollarSign}
-        change="+8% from last month"
+        change="+8% من الشهر الماضي"
         changeType="positive"
       />
       <StatCard
-        title="Completed Treatments"
+        title="العلاجات المكتملة"
         value={stats.completedTreatments}
         icon={UserCheck}
-        change="This month"
+        change="هذا الشهر"
         changeType="neutral"
       />
       <StatCard
-        title="Pending Appointments"
+        title="المواعيد المعلقة"
         value={stats.pendingAppointments}
         icon={Clock}
-        change="Needs attention"
+        change="تحتاج متابعة"
         changeType="neutral"
       />
       <StatCard
-        title="Medical Images"
+        title="الصور الطبية"
         value={stats.totalImages}
         icon={Camera}
-        change="Total stored"
+        change="المحفوظة إجمالاً"
         changeType="neutral"
       />
     </div>

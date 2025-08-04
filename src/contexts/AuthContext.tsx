@@ -97,7 +97,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (error) {
         toast({
-          title: "Error signing in",
+          title: "خطأ في تسجيل الدخول",
           description: error.message,
           variant: "destructive",
         });
@@ -106,7 +106,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { error };
     } catch (error: any) {
       toast({
-        title: "Error signing in",
+        title: "خطأ في تسجيل الدخول",
         description: error.message,
         variant: "destructive",
       });
@@ -129,21 +129,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (error) {
         toast({
-          title: "Error signing up",
+          title: "خطأ في إنشاء الحساب",
           description: error.message,
           variant: "destructive",
         });
       } else {
         toast({
-          title: "Check your email",
-          description: "We've sent you a verification link to complete your registration.",
+          title: "تحقق من بريدك الإلكتروني",
+          description: "لقد أرسلنا لك رابط تفعيل لإكمال التسجيل.",
         });
       }
       
       return { error };
     } catch (error: any) {
       toast({
-        title: "Error signing up",
+        title: "خطأ في إنشاء الحساب",
         description: error.message,
         variant: "destructive",
       });
@@ -156,12 +156,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await supabase.auth.signOut();
       setProfile(null);
       toast({
-        title: "Signed out successfully",
-        description: "You have been signed out of your account.",
+        title: "تم تسجيل الخروج بنجاح",
+        description: "تم تسجيل خروجك من حسابك.",
       });
     } catch (error: any) {
       toast({
-        title: "Error signing out",
+        title: "خطأ في تسجيل الخروج",
         description: error.message,
         variant: "destructive",
       });

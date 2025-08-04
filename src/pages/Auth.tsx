@@ -58,41 +58,43 @@ export default function Auth() {
           <div className="flex justify-center mb-4">
             <Heart className="h-12 w-12 text-blue-600" />
           </div>
-          <CardTitle className="text-2xl">DentalPro</CardTitle>
-          <CardDescription>Comprehensive Dental Clinic Management</CardDescription>
+          <CardTitle className="text-2xl">دنتال برو</CardTitle>
+          <CardDescription>نظام إدارة العيادة السنية الشامل</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="signin" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Sign In</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+              <TabsTrigger value="signin">تسجيل الدخول</TabsTrigger>
+              <TabsTrigger value="signup">إنشاء حساب</TabsTrigger>
             </TabsList>
             
             <TabsContent value="signin">
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">البريد الإلكتروني</Label>
                   <Input
                     id="email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
+                    className="text-right"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password">كلمة المرور</Label>
                   <Input
                     id="password"
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
+                    className="text-right"
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
-                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Sign In
+                  {loading && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
+                  تسجيل الدخول
                 </Button>
               </form>
             </TabsContent>
@@ -101,80 +103,86 @@ export default function Auth() {
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="firstName">First Name</Label>
+                    <Label htmlFor="firstName">الاسم الأول</Label>
                     <Input
                       id="firstName"
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
                       required
+                      className="text-right"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="lastName">Last Name</Label>
+                    <Label htmlFor="lastName">اسم العائلة</Label>
                     <Input
                       id="lastName"
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
                       required
+                      className="text-right"
                     />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signupEmail">Email</Label>
+                  <Label htmlFor="signupEmail">البريد الإلكتروني</Label>
                   <Input
                     id="signupEmail"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
+                    className="text-right"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Phone</Label>
+                  <Label htmlFor="phone">رقم الهاتف</Label>
                   <Input
                     id="phone"
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
+                    className="text-right"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="role">Role</Label>
+                  <Label htmlFor="role">المنصب</Label>
                   <Select value={role} onValueChange={setRole}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="dentist">Dentist</SelectItem>
-                      <SelectItem value="assistant">Dental Assistant</SelectItem>
-                      <SelectItem value="receptionist">Receptionist</SelectItem>
-                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="dentist">طبيب أسنان</SelectItem>
+                      <SelectItem value="assistant">مساعد طبيب أسنان</SelectItem>
+                      <SelectItem value="receptionist">موظف استقبال</SelectItem>
+                      <SelectItem value="admin">مدير</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signupPassword">Password</Label>
+                  <Label htmlFor="signupPassword">كلمة المرور</Label>
                   <Input
                     id="signupPassword"
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
+                    className="text-right"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+                  <Label htmlFor="confirmPassword">تأكيد كلمة المرور</Label>
                   <Input
                     id="confirmPassword"
                     type="password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required
+                    className="text-right"
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={loading || password !== confirmPassword}>
-                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Sign Up
+                  {loading && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
+                  إنشاء حساب
                 </Button>
               </form>
             </TabsContent>

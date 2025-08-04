@@ -39,13 +39,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   };
 
   const menuItems = [
-    { icon: Activity, label: "Dashboard", href: "/" },
-    { icon: Calendar, label: "Appointments", href: "/appointments" },
-    { icon: Users, label: "Patients", href: "/patients" },
-    { icon: FileText, label: "Treatments", href: "/treatments" },
-    { icon: Camera, label: "Medical Images", href: "/images" },
-    { icon: DollarSign, label: "Billing", href: "/billing" },
-    { icon: Settings, label: "Settings", href: "/settings" },
+    { icon: Activity, label: "لوحة التحكم", href: "/" },
+    { icon: Calendar, label: "المواعيد", href: "/appointments" },
+    { icon: Users, label: "المرضى", href: "/patients" },
+    { icon: FileText, label: "العلاجات", href: "/treatments" },
+    { icon: Camera, label: "الصور الطبية", href: "/images" },
+    { icon: DollarSign, label: "الفواتير", href: "/billing" },
+    { icon: Settings, label: "الإعدادات", href: "/settings" },
   ];
 
   return (
@@ -54,16 +54,20 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       <header className="bg-white dark:bg-gray-800 shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <Heart className="h-8 w-8 text-blue-600 mr-3" />
+            <div className="flex items-center space-x-reverse space-x-4">
               <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-                DentalPro
+                دنتال برو
               </h1>
+              <Heart className="h-8 w-8 text-blue-600" />
             </div>
             
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-reverse space-x-4">
               <Badge variant="outline" className="capitalize">
-                {profile?.role || "Loading..."}
+                {profile?.role === 'dentist' ? 'طبيب أسنان' :
+                 profile?.role === 'assistant' ? 'مساعد' :
+                 profile?.role === 'receptionist' ? 'موظف استقبال' :
+                 profile?.role === 'admin' ? 'مدير' :
+                 profile?.role || "جاري التحميل..."}
               </Badge>
               
               <DropdownMenu>
@@ -90,12 +94,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem>
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>Settings</span>
+                    <Settings className="ml-2 h-4 w-4" />
+                    <span>الإعدادات</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={signOut}>
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Log out</span>
+                    <LogOut className="ml-2 h-4 w-4" />
+                    <span>تسجيل الخروج</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -107,15 +111,15 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       {/* Navigation */}
       <nav className="bg-white dark:bg-gray-800 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex space-x-8 overflow-x-auto">
+          <div className="flex space-x-reverse space-x-8 overflow-x-auto">
             {menuItems.map((item) => (
               <Button
                 key={item.label}
                 variant="ghost"
-                className="flex items-center space-x-2 whitespace-nowrap py-4 px-3"
+                className="flex items-center space-x-reverse space-x-2 whitespace-nowrap py-4 px-3"
               >
-                <item.icon className="h-4 w-4" />
                 <span>{item.label}</span>
+                <item.icon className="h-4 w-4" />
               </Button>
             ))}
           </div>
