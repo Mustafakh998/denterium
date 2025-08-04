@@ -1,5 +1,6 @@
 import React from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -33,6 +34,8 @@ interface DashboardLayoutProps {
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const { user, signOut, profile } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const getInitials = (firstName?: string, lastName?: string) => {
     return `${firstName?.charAt(0) || ""}${lastName?.charAt(0) || ""}`.toUpperCase();
@@ -116,7 +119,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               <Button
                 key={item.label}
                 variant="ghost"
-                className="flex items-center space-x-reverse space-x-2 whitespace-nowrap py-4 px-3"
+                className={`flex items-center space-x-reverse space-x-2 whitespace-nowrap py-4 px-3 ${
+                  location.pathname === item.href ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20' : ''
+                }`}
+                onClick={() => navigate(item.href)}
               >
                 <span>{item.label}</span>
                 <item.icon className="h-4 w-4" />
