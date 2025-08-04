@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useTheme } from "next-themes";
 import { supabase } from "@/integrations/supabase/client";
 import { 
   Settings as SettingsIcon, 
@@ -23,6 +24,7 @@ import {
 export default function Settings() {
   const { user, profile, loading, refreshProfile } = useAuth();
   const { toast } = useToast();
+  const { theme, setTheme } = useTheme();
   const [saving, setSaving] = useState(false);
   
   // Profile form state
@@ -286,15 +288,27 @@ export default function Settings() {
                 <div className="space-y-2">
                   <Label>نمط العرض</Label>
                   <div className="grid grid-cols-3 gap-3">
-                    <Button variant="outline" className="h-20 flex flex-col">
+                    <Button 
+                      variant={theme === "light" ? "default" : "outline"} 
+                      className="h-20 flex flex-col"
+                      onClick={() => setTheme("light")}
+                    >
                       <div className="w-6 h-6 bg-white border rounded mb-1"></div>
                       فاتح
                     </Button>
-                    <Button variant="outline" className="h-20 flex flex-col">
+                    <Button 
+                      variant={theme === "dark" ? "default" : "outline"} 
+                      className="h-20 flex flex-col"
+                      onClick={() => setTheme("dark")}
+                    >
                       <div className="w-6 h-6 bg-gray-800 rounded mb-1"></div>
                       داكن
                     </Button>
-                    <Button variant="outline" className="h-20 flex flex-col">
+                    <Button 
+                      variant={theme === "system" ? "default" : "outline"} 
+                      className="h-20 flex flex-col"
+                      onClick={() => setTheme("system")}
+                    >
                       <div className="w-6 h-6 bg-gradient-to-br from-white to-gray-800 rounded mb-1"></div>
                       تلقائي
                     </Button>
