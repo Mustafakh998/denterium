@@ -58,15 +58,27 @@ const Index = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button className="w-full justify-start" variant="outline">
+              <Button 
+                className="w-full justify-start" 
+                variant="outline"
+                onClick={() => navigate("/patients")}
+              >
                 <Plus className="ml-2 h-4 w-4" />
                 إضافة مريض جديد
               </Button>
-              <Button className="w-full justify-start" variant="outline">
+              <Button 
+                className="w-full justify-start" 
+                variant="outline"
+                onClick={() => navigate("/appointments")}
+              >
                 <Calendar className="ml-2 h-4 w-4" />
                 جدولة موعد
               </Button>
-              <Button className="w-full justify-start" variant="outline">
+              <Button 
+                className="w-full justify-start" 
+                variant="outline"
+                onClick={() => navigate("/patients")}
+              >
                 <Users className="ml-2 h-4 w-4" />
                 عرض جميع المرضى
               </Button>
@@ -108,50 +120,53 @@ const Index = () => {
           </Card>
         </div>
 
-        {/* Feature Preview Cards */}
-        <div className="grid gap-6 md:grid-cols-3">
-          <Card className="border-2 border-dashed border-gray-300 hover:border-blue-500 transition-colors">
-            <CardHeader>
-              <CardTitle className="text-lg">نماذج الأسنان ثلاثية الأبعاد</CardTitle>
-              <CardDescription>
-                تصور تفاعلي ثلاثي الأبعاد لبنية أسنان المريض
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button variant="outline" className="w-full">
-                قريباً
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="border-2 border-dashed border-gray-300 hover:border-blue-500 transition-colors">
-            <CardHeader>
-              <CardTitle className="text-lg">تحليل الأشعة السينية</CardTitle>
-              <CardDescription>
-                معالجة صور متقدمة وأدوات تشخيصية
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button variant="outline" className="w-full">
-                قريباً
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="border-2 border-dashed border-gray-300 hover:border-blue-500 transition-colors">
-            <CardHeader>
-              <CardTitle className="text-lg">تكامل الدفع</CardTitle>
-              <CardDescription>
-                طرق الدفع العراقية المحلية وإدارة الاشتراكات
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button variant="outline" className="w-full">
-                قريباً
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Coming Soon Features */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Activity className="h-5 w-5" />
+              الميزات القادمة
+            </CardTitle>
+            <CardDescription>
+              ميزات جديدة قيد التطوير لتحسين تجربة إدارة العيادة
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-3">
+              <div className="p-4 border rounded-lg bg-blue-50 dark:bg-blue-950/20">
+                <h4 className="font-medium text-blue-900 dark:text-blue-100">
+                  🦷 نماذج ثلاثية الأبعاد
+                </h4>
+                <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
+                  تصور تفاعلي للأسنان
+                </p>
+              </div>
+              <div className="p-4 border rounded-lg bg-purple-50 dark:bg-purple-950/20">
+                <h4 className="font-medium text-purple-900 dark:text-purple-100">
+                  📊 تحليل الأشعة
+                </h4>
+                <p className="text-sm text-purple-700 dark:text-purple-300 mt-1">
+                  ذكاء اصطناعي للتشخيص
+                </p>
+              </div>
+              <div className="p-4 border rounded-lg bg-green-50 dark:bg-green-950/20">
+                <h4 className="font-medium text-green-900 dark:text-green-100">
+                  💳 دفع محلي
+                </h4>
+                <p className="text-sm text-green-700 dark:text-green-300 mt-1">
+                  طرق دفع عراقية
+                </p>
+              </div>
+            </div>
+            <Button 
+              variant="outline" 
+              className="w-full mt-4"
+              onClick={() => navigate("/features")}
+            >
+              عرض جميع الميزات القادمة
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     </DashboardLayout>
   );
