@@ -1,0 +1,182 @@
+import React, { useEffect, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  Users,
+  Calendar,
+  DollarSign,
+  TrendingUp,
+  UserCheck,
+  Clock,
+  FileText,
+  Camera,
+} from "lucide-react";
+
+interface StatCardProps {
+  title: string;
+  value: string | number;
+  icon: React.ElementType;
+  change?: string;
+  changeType?: "positive" | "negative" | "neutral";
+}
+
+function StatCard({ title, value, icon: Icon, change, changeType = "neutral" }: StatCardProps) {
+  const changeColor = {
+    positive: "text-green-600",
+    negative: "text-red-600",
+    neutral: "text-gray-600"
+  }[changeType];
+
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium">{title}</CardTitle>
+        <Icon className="h-4 w-4 text-muted-foreground" />
+      </CardHeader>
+      <CardContent>
+        <div className="text-2xl font-bold">{value}</div>
+        {change && (
+          <p className={`text-xs ${changeColor}`}>
+            {change}
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+export default function DashboardStats() {
+  const { profile } = useAuth();
+  const [stats, setStats] = useState({
+    totalPatients: 0,
+    todayAppointments: 0,
+    monthlyRevenue: 0,
+    completedTreatments: 0,
+    pendingAppointments: 0,
+    totalImages: 0,
+  });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      if (!profile?.clinic_id) return;
+
+      try {
+        // Fetch total patients
+        const { count: patientsCount } = await supabase
+          .from("patients")
+          .select("*", { count: "exact", head: true })
+          .eq("clinic_id", profile.clinic_id)
+          .eq("is_active", true);
+
+        // Fetch today's appointments
+        const today = new Date().toISOString().split('T')[0];
+        const { count: todayCount } = await supabase
+          .from("appointments")
+          .select("*", { count: "exact", head: true })
+          .eq("clinic_id", profile.clinic_id)
+          .gte("appointment_date", `${today}T00:00:00`)
+          .lt("appointment_date", `${today}T23:59:59`);
+
+        // Fetch monthly revenue
+        const currentMonth = new Date().toISOString().substring(0, 7);
+        const { data: invoices } = await supabase
+          .from("invoices")
+          .select("paid_amount")
+          .eq("clinic_id", profile.clinic_id)
+          .gte("created_at", `${currentMonth}-01`)
+          .eq("status", "paid");
+
+        const monthlyRevenue = invoices?.reduce((sum, invoice) => sum + (invoice.paid_amount || 0), 0) || 0;
+
+        // Fetch completed treatments this month
+        const { count: treatmentsCount } = await supabase
+          .from("treatments")
+          .select("*", { count: "exact", head: true })
+          .eq("clinic_id", profile.clinic_id)
+          .eq("status", "completed")
+          .gte("completion_date", `${currentMonth}-01`);
+
+        // Fetch pending appointments
+        const { count: pendingCount } = await supabase
+          .from("appointments")
+          .select("*", { count: "exact", head: true })
+          .eq("clinic_id", profile.clinic_id)
+          .eq("status", "scheduled");
+
+        // Fetch total medical images
+        const { count: imagesCount } = await supabase
+          .from("medical_images")
+          .select("*", { count: "exact", head: true })
+          .eq("clinic_id", profile.clinic_id);
+
+        setStats({
+          totalPatients: patientsCount || 0,
+          todayAppointments: todayCount || 0,
+          monthlyRevenue: monthlyRevenue,
+          completedTreatments: treatmentsCount || 0,
+          pendingAppointments: pendingCount || 0,
+          totalImages: imagesCount || 0,
+        });
+      } catch (error) {
+        console.error("Error fetching stats:", error);
+      }
+    };
+
+    fetchStats();
+  }, [profile?.clinic_id]);
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    }).format(amount);
+  };
+
+  return (
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <StatCard
+        title="Total Patients"
+        value={stats.totalPatients}
+        icon={Users}
+        change="+12% from last month"
+        changeType="positive"
+      />
+      <StatCard
+        title="Today's Appointments"
+        value={stats.todayAppointments}
+        icon={Calendar}
+        change="3 completed"
+        changeType="neutral"
+      />
+      <StatCard
+        title="Monthly Revenue"
+        value={formatCurrency(stats.monthlyRevenue)}
+        icon={DollarSign}
+        change="+8% from last month"
+        changeType="positive"
+      />
+      <StatCard
+        title="Completed Treatments"
+        value={stats.completedTreatments}
+        icon={UserCheck}
+        change="This month"
+        changeType="neutral"
+      />
+      <StatCard
+        title="Pending Appointments"
+        value={stats.pendingAppointments}
+        icon={Clock}
+        change="Needs attention"
+        changeType="neutral"
+      />
+      <StatCard
+        title="Medical Images"
+        value={stats.totalImages}
+        icon={Camera}
+        change="Total stored"
+        changeType="neutral"
+      />
+    </div>
+  );
+}
