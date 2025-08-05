@@ -80,11 +80,23 @@ export default function Subscription() {
     
     setCheckingStatus(true);
     try {
+      // Check if user has clinic_id, if not, they don't have a subscription
+      if (!profile?.clinic_id) {
+        setSubscription({
+          subscribed: false,
+          plan: null,
+          subscription_end: null,
+          payment_method: null
+        });
+        setCheckingStatus(false);
+        return;
+      }
+
       // Check subscription status from database directly (no Stripe needed)
       const { data: subData, error } = await supabase
         .from('subscriptions')
         .select('*')
-        .eq('clinic_id', profile?.clinic_id)
+        .eq('clinic_id', profile.clinic_id)
         .eq('status', 'approved')
         .order('created_at', { ascending: false })
         .limit(1)
@@ -122,7 +134,7 @@ export default function Subscription() {
   };
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || !profile) return;
     
     // Initial check with a small delay to prevent rapid calls
     const timer = setTimeout(() => {
@@ -140,7 +152,7 @@ export default function Subscription() {
       clearTimeout(timer);
       clearInterval(interval);
     };
-  }, [user]);
+  }, [user, profile]);
 
   const handleStripeSubscription = async (plan: string) => {
     if (!user) {
@@ -242,6 +254,84 @@ export default function Subscription() {
     }
     return <Badge variant="outline">غير مفعل</Badge>;
   };
+
+  // Show message for users without clinic_id
+  if (!profile?.clinic_id) {
+    return (
+      <DashboardLayout>
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                إدارة الاشتراك
+              </h1>
+              <p className="text-gray-600 dark:text-gray-400 mt-2">
+                اختر الخطة المناسبة لعيادتك
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-lg text-center">
+            <h3 className="text-lg font-medium text-blue-900 dark:text-blue-100 mb-2">
+              مرحباً بك!
+            </h3>
+            <p className="text-blue-700 dark:text-blue-300 mb-4">
+              يمكنك الاشتراك الآن وسيتم إنشاء عيادتك تلقائياً بعد تأكيد الدفع
+            </p>
+          </div>
+
+          {/* Show subscription plans even for users without clinic */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {plans.map((plan) => (
+              <Card key={plan.id}>
+                <CardHeader>
+                  <CardTitle className="text-center">{plan.name}</CardTitle>
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-primary">{plan.price}</div>
+                    <div className="text-sm text-muted-foreground">{plan.usdPrice} شهرياً</div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2 mb-6">
+                    {plan.features.map((feature, index) => (
+                      <li key={index} className="flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <span className="text-sm">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  
+                  <div className="space-y-2">
+                    {/* FIB Credit Card Payment */}
+                    <FibPaymentDialog 
+                      planId={plan.id} 
+                      planName={plan.name} 
+                      price={parseInt(plan.price.replace(/[^\d]/g, ''))} 
+                    />
+                    
+                    {/* Local Payment Method */}
+                    <ManualPaymentDialog planId={plan.id} planName={plan.name} price={plan.price} />
+                    
+                    <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-center">
+                      <p className="text-sm text-blue-700 dark:text-blue-300 font-medium mb-2">
+                        طرق الدفع المتاحة:
+                      </p>
+                      <div className="text-xs text-blue-600 dark:text-blue-400 space-y-1">
+                        <p>🏛️ بنك العراق الأول (FIB)</p>
+                        <p>🟢 كي كارد (Qi Card)</p>
+                        <p>🟡 زين كاش (Zain Cash)</p>
+                        <p>🏦 تحويل بنكي مباشر</p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
@@ -376,10 +466,19 @@ function ManualPaymentDialog({ planId, planName, price }: { planId: string, plan
   const { toast } = useToast();
 
   const handleManualPayment = async () => {
-    if (!user || !profile?.clinic_id || !screenshot) {
+    if (!user) {
+      toast({
+        title: "يجب تسجيل الدخول",
+        description: "يرجى تسجيل الدخول أولاً",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!senderName || !senderPhone || !screenshot) {
       toast({
         title: "بيانات ناقصة",
-        description: "يرجى ملء جميع البيانات المطلوبة",
+        description: "يرجى ملء جميع البيانات المطلوبة وإرفاق صورة الإيصال",
         variant: "destructive",
       });
       return;
@@ -401,7 +500,7 @@ function ManualPaymentDialog({ planId, planName, price }: { planId: string, plan
       const { error: paymentError } = await supabase
         .from('manual_payments')
         .insert({
-          clinic_id: profile.clinic_id,
+          clinic_id: profile?.clinic_id, // Allow null clinic_id for new users
           payment_method: paymentMethod,
           amount_iqd: parseInt(price.replace(/[^\d]/g, '')),
           screenshot_url: fileName,
@@ -414,27 +513,32 @@ function ManualPaymentDialog({ planId, planName, price }: { planId: string, plan
 
       if (paymentError) throw paymentError;
 
-      // Create pending subscription
-      const planPricing = {
-        basic: { iqd: 10000, usd: 7.60 },
-        premium: { iqd: 20000, usd: 15.20 },
-        enterprise: { iqd: 30000, usd: 22.80 }
-      };
+      // Only create subscription if user has clinic_id
+      if (profile?.clinic_id) {
+        // Create pending subscription
+        const planPricing = {
+          basic: { iqd: 10000, usd: 7.60 },
+          premium: { iqd: 20000, usd: 15.20 },
+          enterprise: { iqd: 30000, usd: 22.80 }
+        };
 
-      await supabase
-        .from('subscriptions')
-        .insert({
-          clinic_id: profile.clinic_id,
-          plan: planId as 'basic' | 'premium' | 'enterprise',
-          status: 'pending',
-          amount_iqd: planPricing[planId as keyof typeof planPricing].iqd,
-          amount_usd: planPricing[planId as keyof typeof planPricing].usd,
-          payment_method: paymentMethod
-        });
+        await supabase
+          .from('subscriptions')
+          .insert({
+            clinic_id: profile.clinic_id,
+            plan: planId as 'basic' | 'premium' | 'enterprise',
+            status: 'pending',
+            amount_iqd: planPricing[planId as keyof typeof planPricing].iqd,
+            amount_usd: planPricing[planId as keyof typeof planPricing].usd,
+            payment_method: paymentMethod
+          });
+      }
 
       toast({
         title: "تم إرسال طلب الدفع",
-        description: "تم إرسال طلب الدفع للمراجعة، سيتم تفعيل الاشتراك خلال 24 ساعة",
+        description: profile?.clinic_id 
+          ? "تم إرسال طلب الدفع للمراجعة، سيتم تفعيل الاشتراك خلال 24 ساعة"
+          : "تم إرسال طلب الدفع للمراجعة، سيتم إنشاء العيادة وتفعيل الاشتراك خلال 24 ساعة",
       });
 
       setOpen(false);
