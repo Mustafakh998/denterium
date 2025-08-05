@@ -467,13 +467,14 @@ function ManualPaymentDialog({ planId, planName, price }: { planId: string, plan
         <div className="space-y-4">
           <div>
             <Label htmlFor="payment-method">طريقة الدفع</Label>
-            <Select value={paymentMethod} onValueChange={(value: 'qi_card' | 'zain_cash') => setPaymentMethod(value)}>
+            <Select value={paymentMethod} onValueChange={(value: 'qi_card' | 'zain_cash' | 'bank_transfer') => setPaymentMethod(value)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="qi_card">كي كارد</SelectItem>
                 <SelectItem value="zain_cash">زين كاش</SelectItem>
+                <SelectItem value="bank_transfer">تحويل بنكي</SelectItem>
               </SelectContent>
             </Select>
           </div>
