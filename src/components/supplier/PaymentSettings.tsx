@@ -56,7 +56,7 @@ export default function PaymentSettings() {
         .from('suppliers')
         .select('*')
         .eq('user_id', user?.id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       setSupplier(data);
@@ -71,7 +71,7 @@ export default function PaymentSettings() {
         .from('suppliers')
         .select('id')
         .eq('user_id', user?.id)
-        .single();
+        .maybeSingle();
 
       if (!supplierData) return;
 
@@ -112,7 +112,7 @@ export default function PaymentSettings() {
         .from('suppliers')
         .select('id')
         .eq('user_id', user?.id)
-        .single();
+        .maybeSingle();
 
       if (!supplierData) throw new Error('Supplier not found');
 

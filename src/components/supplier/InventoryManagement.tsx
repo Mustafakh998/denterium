@@ -17,6 +17,7 @@ import {
   Eye
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import AddProductForm from './AddProductForm';
 
 interface Product {
   id: string;
@@ -50,7 +51,7 @@ export default function InventoryManagement() {
         .from('suppliers')
         .select('id')
         .eq('user_id', user?.id)
-        .single();
+        .maybeSingle();
 
       if (!supplierData) return;
 
@@ -118,10 +119,7 @@ export default function InventoryManagement() {
           <h2 className="text-2xl font-bold">Inventory Management</h2>
           <p className="text-muted-foreground">Monitor your product inventory and stock levels</p>
         </div>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Product
-        </Button>
+        <AddProductForm onProductAdded={fetchProducts} />
       </div>
 
       {/* Alerts */}

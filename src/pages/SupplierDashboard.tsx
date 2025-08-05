@@ -16,6 +16,7 @@ import {
   Eye,
   Edit
 } from 'lucide-react';
+import AddProductForm from '@/components/supplier/AddProductForm';
 
 interface SupplierData {
   id: string;
@@ -65,7 +66,7 @@ export default function SupplierDashboard() {
         .from('suppliers')
         .select('*')
         .eq('user_id', user?.id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       setSupplier(data);
@@ -81,7 +82,7 @@ export default function SupplierDashboard() {
         .from('suppliers')
         .select('id')
         .eq('user_id', user?.id)
-        .single();
+        .maybeSingle();
 
       if (!supplierData) return;
 
@@ -244,10 +245,15 @@ export default function SupplierDashboard() {
               <Package className="h-4 w-4 mr-2" />
               View Inventory
             </Button>
-            <Button variant="outline" className="w-full">
-              <Plus className="h-4 w-4 mr-2" />
-              Add Product
-            </Button>
+            <AddProductForm 
+              onProductAdded={() => fetchDashboardStats()} 
+              trigger={
+                <Button variant="outline" className="w-full">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Product
+                </Button>
+              }
+            />
           </CardContent>
         </Card>
 
