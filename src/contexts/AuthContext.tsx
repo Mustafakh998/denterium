@@ -51,6 +51,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (error) {
         console.error("Error fetching profile:", error);
+        // Don't return early, set profile to null so the UI can handle it
+        setProfile(null);
         return;
       }
       
@@ -58,6 +60,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setProfile(data);
     } catch (error) {
       console.error("Error in refreshProfile:", error);
+      // Set profile to null on error so UI can handle it
+      setProfile(null);
     }
   }, [user]);
 
@@ -184,13 +188,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = async () => {
     try {
-      await supabase.auth.signOut();
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
       setProfile(null);
+      setUser(null);
+      setSession(null);
+      
       toast({
         title: "تم تسجيل الخروج بنجاح",
         description: "تم تسجيل خروجك من حسابك.",
       });
+      
+      // Force redirect to auth page
+      window.location.href = '/auth';
     } catch (error: any) {
+      console.error("Sign out error:", error);
       toast({
         title: "خطأ في تسجيل الخروج",
         description: error.message,

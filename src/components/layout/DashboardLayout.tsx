@@ -56,7 +56,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { icon: ShieldCheck, label: "الموردين", href: "/suppliers" },
     { icon: CreditCard, label: "الاشتراك", href: "/subscription" },
     ...(profile?.role === 'admin' ? [
-      { icon: ShieldCheck, label: "إدارة المدفوعات", href: "/admin/payments" }
+      { icon: ShieldCheck, label: "إدارة المدفوعات", href: "/admin/payments" },
+      { icon: UserCheck, label: "إدارة المستخدمين", href: "/admin/users" }
     ] : []),
     ...(profile?.system_role === 'super_admin' ? [
       { icon: ShieldCheck, label: "إدارة النظام", href: "/super-admin" }

@@ -236,20 +236,6 @@ export default function Suppliers() {
         </div>
       )}
 
-      {/* Call to Action for Suppliers */}
-      <Card className="bg-primary/5 border-primary/20">
-        <CardHeader>
-          <CardTitle>Are you a dental supplier?</CardTitle>
-          <CardDescription>
-            Join our marketplace to connect with dental practices and grow your business
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button onClick={() => window.location.href = '/auth'}>
-            Register as Supplier
-          </Button>
-        </CardContent>
-      </Card>
     </div>
   );
 }

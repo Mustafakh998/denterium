@@ -44,9 +44,13 @@ export default function AddTreatmentForm({ onSuccess }: AddTreatmentFormProps) {
   }, [profile?.clinic_id]);
 
   const fetchPatients = async () => {
-    if (!profile?.clinic_id) return;
+    if (!profile?.clinic_id) {
+      console.log("No clinic_id available for fetching patients");
+      return;
+    }
 
     try {
+      console.log("Fetching patients for clinic:", profile.clinic_id);
       const { data, error } = await supabase
         .from("patients")
         .select("id, first_name, last_name, patient_number")
@@ -54,10 +58,25 @@ export default function AddTreatmentForm({ onSuccess }: AddTreatmentFormProps) {
         .eq("is_active", true)
         .order("first_name");
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching patients:", error);
+        toast({
+          title: "خطأ في تحميل المرضى",
+          description: "لم نتمكن من تحميل قائمة المرضى",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      console.log("Fetched patients:", data);
       setPatients(data || []);
     } catch (error) {
       console.error("Error fetching patients:", error);
+      toast({
+        title: "خطأ في تحميل المرضى",
+        description: "حدث خطأ أثناء تحميل قائمة المرضى",
+        variant: "destructive",
+      });
     }
   };
 

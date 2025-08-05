@@ -76,7 +76,16 @@ export default function Patients() {
         .eq("is_active", true)
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching patients:", error);
+        toast({
+          title: "خطأ في تحميل البيانات",
+          description: "حدث خطأ أثناء تحميل بيانات المرضى",
+          variant: "destructive",
+        });
+        setPatients([]);
+        return;
+      }
       setPatients(data || []);
     } catch (error) {
       console.error("Error fetching patients:", error);
