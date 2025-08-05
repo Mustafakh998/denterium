@@ -1,6 +1,6 @@
 import React from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -130,17 +130,17 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex space-x-reverse space-x-8 overflow-x-auto">
             {menuItems.map((item) => (
-              <Button
-                key={item.label}
-                variant="ghost"
-                className={`flex items-center space-x-reverse space-x-2 whitespace-nowrap py-4 px-3 ${
-                  location.pathname === item.href ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20' : ''
-                }`}
-                onClick={() => navigate(item.href)}
-              >
-                <span>{item.label}</span>
-                <item.icon className="h-4 w-4" />
-              </Button>
+              <Link key={item.label} to={item.href}>
+                <Button
+                  variant="ghost"
+                  className={`flex items-center space-x-reverse space-x-2 whitespace-nowrap py-4 px-3 ${
+                    location.pathname === item.href ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20' : ''
+                  }`}
+                >
+                  <span>{item.label}</span>
+                  <item.icon className="h-4 w-4" />
+                </Button>
+              </Link>
             ))}
           </div>
         </div>
