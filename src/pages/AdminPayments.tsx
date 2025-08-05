@@ -14,7 +14,7 @@ import { useQuery } from "@tanstack/react-query";
 
 interface ManualPayment {
   id: string;
-  clinic_id: string;
+  clinic_id: string | null;
   payment_method: string;
   amount_iqd: number;
   screenshot_url: string;
@@ -58,9 +58,18 @@ export default function AdminPayments() {
     enabled: isAdmin
   });
 
-  const handleApprovePayment = async (paymentId: string, clinicId: string) => {
+  const handleApprovePayment = async (paymentId: string, clinicId: string | null) => {
     setProcessing(true);
     try {
+      // Get the payment details first
+      const { data: payment, error: paymentFetchError } = await supabase
+        .from('manual_payments')
+        .select('*')
+        .eq('id', paymentId)
+        .single();
+
+      if (paymentFetchError) throw paymentFetchError;
+
       // Update payment status
       const { error: paymentError } = await supabase
         .from('manual_payments')
@@ -73,33 +82,64 @@ export default function AdminPayments() {
 
       if (paymentError) throw paymentError;
 
-      // Find the corresponding subscription and activate it
-      const { data: subscriptions } = await supabase
-        .from('subscriptions')
-        .select('*')
-        .eq('clinic_id', clinicId)
-        .eq('status', 'pending')
-        .order('created_at', { ascending: false })
-        .limit(1);
+      // Determine plan based on amount
+      let plan: 'basic' | 'premium' | 'enterprise' = 'basic';
+      if (payment.amount_iqd >= 30000) {
+        plan = 'enterprise';
+      } else if (payment.amount_iqd >= 20000) {
+        plan = 'premium';
+      }
 
-      if (subscriptions && subscriptions.length > 0) {
-        const subscription = subscriptions[0];
-        const now = new Date();
-        const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, now.getDate());
+      // Create or update subscription record
+      const now = new Date();
+      const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, now.getDate());
 
+      // Check if subscription already exists
+      let existingSubscription = null;
+      if (clinicId) {
+        const { data } = await supabase
+          .from('subscriptions')
+          .select('*')
+          .eq('clinic_id', clinicId)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        existingSubscription = data;
+      }
+
+      if (existingSubscription) {
+        // Update existing subscription
         await supabase
           .from('subscriptions')
           .update({
             status: 'approved',
+            plan: plan,
+            amount_iqd: payment.amount_iqd,
+            amount_usd: Math.round(payment.amount_iqd / 1316), // Current USD/IQD rate
+            payment_method: payment.payment_method,
             current_period_start: now.toISOString(),
             current_period_end: nextMonth.toISOString()
           })
-          .eq('id', subscription.id);
+          .eq('id', existingSubscription.id);
+      } else {
+        // Create new subscription record
+        await supabase
+          .from('subscriptions')
+          .insert({
+            clinic_id: clinicId,
+            plan: plan,
+            status: 'approved',
+            amount_iqd: payment.amount_iqd,
+            amount_usd: Math.round(payment.amount_iqd / 1316), // Current USD/IQD rate
+            payment_method: payment.payment_method,
+            current_period_start: now.toISOString(),
+            current_period_end: nextMonth.toISOString()
+          });
       }
 
       toast({
         title: "تم الموافقة على الدفع",
-        description: "تم تفعيل الاشتراك بنجاح",
+        description: `تم تفعيل اشتراك ${plan === 'basic' ? 'أساسي' : plan === 'premium' ? 'احترافي' : 'مؤسسي'} بنجاح`,
       });
 
       refetch();

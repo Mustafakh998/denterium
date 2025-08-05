@@ -44,7 +44,9 @@ const SuperAdminSubscriptions = () => {
   const fetchSubscriptions = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      
+      // Fetch both subscriptions and manual payments
+      const { data: subscriptionsData, error: subsError } = await supabase
         .from('subscriptions')
         .select(`
           *,
@@ -53,8 +55,53 @@ const SuperAdminSubscriptions = () => {
         `)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setSubscriptions(data || []);
+      if (subsError) throw subsError;
+
+      // Also fetch approved manual payments that don't have corresponding subscriptions
+      const { data: manualPayments, error: paymentsError } = await supabase
+        .from('manual_payments')
+        .select(`
+          id,
+          amount_iqd,
+          payment_method,
+          created_at,
+          status,
+          clinic_id,
+          profiles!inner(first_name, last_name, email),
+          clinics(name)
+        `)
+        .eq('status', 'approved')
+        .order('created_at', { ascending: false });
+
+      if (paymentsError) throw paymentsError;
+
+      // Convert manual payments to subscription format and merge
+      const convertedPayments = manualPayments?.map(payment => ({
+        id: payment.id,
+        plan: payment.amount_iqd >= 30000 ? 'enterprise' : payment.amount_iqd >= 20000 ? 'premium' : 'basic',
+        status: 'approved',
+        amount_iqd: payment.amount_iqd,
+        current_period_start: payment.created_at,
+        current_period_end: null,
+        created_at: payment.created_at,
+        clinic_id: payment.clinic_id,
+        profiles: payment.profiles,
+        clinics: payment.clinics,
+        isManualPayment: true
+      })) || [];
+
+      // Filter out manual payments that already have subscription records
+      const subscriptionClinicIds = new Set(subscriptionsData?.map(s => s.clinic_id) || []);
+      const uniqueManualPayments = convertedPayments.filter(p => 
+        !subscriptionClinicIds.has(p.clinic_id)
+      );
+
+      const allSubscriptions = [
+        ...(subscriptionsData || []),
+        ...uniqueManualPayments
+      ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+      setSubscriptions(allSubscriptions as any);
     } catch (error) {
       console.error('Error fetching subscriptions:', error);
       toast({
@@ -94,8 +141,11 @@ const SuperAdminSubscriptions = () => {
         updateData.current_period_end = new Date(editForm.current_period_end).toISOString();
       }
 
+      // Check if this is a manual payment or subscription
+      const tableName = (editingSubscription as any).isManualPayment ? 'manual_payments' : 'subscriptions';
+      
       const { error } = await supabase
-        .from('subscriptions')
+        .from(tableName)
         .update(updateData)
         .eq('id', editingSubscription.id);
 

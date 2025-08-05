@@ -25,27 +25,50 @@ export const useSubscription = () => {
     try {
       setLoading(true);
       
+      let subscriptionData = null;
+
       // Check by clinic_id if user has a clinic
-      let query = supabase
-        .from('subscriptions')
-        .select('*')
-        .eq('status', 'approved')
-        .order('created_at', { ascending: false })
-        .limit(1);
-
       if (profile.clinic_id) {
-        query = query.eq('clinic_id', profile.clinic_id);
+        const { data } = await supabase
+          .from('subscriptions')
+          .select('*')
+          .eq('clinic_id', profile.clinic_id)
+          .eq('status', 'approved')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        
+        subscriptionData = data;
       } else {
-        query = query.is('clinic_id', null);
-      }
+        // Check if user has approved manual payment without clinic
+        const { data: manualPayment } = await supabase
+          .from('manual_payments')
+          .select('*')
+          .is('clinic_id', null)
+          .eq('status', 'approved')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
 
-      const { data: subscriptionData } = await query.maybeSingle();
-      
-      if (subscriptionData) {
-        setSubscription(subscriptionData);
-      } else {
-        setSubscription(null);
+        if (manualPayment) {
+          // Convert manual payment to subscription format
+          subscriptionData = {
+            id: manualPayment.id,
+            plan: manualPayment.amount_iqd >= 30000 ? 'enterprise' : 
+                  manualPayment.amount_iqd >= 20000 ? 'premium' : 'basic',
+            status: 'approved',
+            amount_iqd: manualPayment.amount_iqd,
+            amount_usd: Math.round(manualPayment.amount_iqd / 1316),
+            current_period_start: manualPayment.created_at,
+            current_period_end: null,
+            payment_method: manualPayment.payment_method,
+            created_at: manualPayment.created_at,
+            clinic_id: null
+          };
+        }
       }
+      
+      setSubscription(subscriptionData);
     } catch (error) {
       console.error('Error fetching subscription:', error);
       setSubscription(null);

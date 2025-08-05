@@ -32,7 +32,7 @@ const CreateClinic = () => {
       if (!user) return;
 
       try {
-        // Check if user has an approved subscription without clinic_id
+        // Check for approved subscriptions without clinic_id (new users)
         const { data: subscription } = await supabase
           .from('subscriptions')
           .select('*')
@@ -40,7 +40,7 @@ const CreateClinic = () => {
           .eq('status', 'approved')
           .maybeSingle();
 
-        // Also check manual payments for approved subscriptions without clinic_id
+        // Also check for approved manual payments without clinic_id
         const { data: manualPayment } = await supabase
           .from('manual_payments')
           .select('*')
@@ -48,7 +48,7 @@ const CreateClinic = () => {
           .eq('status', 'approved')
           .maybeSingle();
 
-        console.log('Subscription check:', { subscription, manualPayment });
+        console.log('Subscription check:', { subscription, manualPayment, hasSubscription: !!(subscription || manualPayment) });
         setHasApprovedSubscription(!!(subscription || manualPayment));
       } catch (error) {
         console.error('Error checking subscription:', error);
@@ -106,12 +106,14 @@ const CreateClinic = () => {
       await supabase
         .from('subscriptions')
         .update({ clinic_id: clinic.id })
-        .eq('clinic_id', null)
+        .is('clinic_id', null)
         .eq('status', 'approved');
 
+      // Also update manual payments
       await supabase
         .from('manual_payments')
         .update({ clinic_id: clinic.id })
+        .is('clinic_id', null)
         .eq('status', 'approved');
 
       toast({
