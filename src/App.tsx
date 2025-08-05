@@ -26,6 +26,7 @@ import Training from "./pages/Training";
 import SupplierDashboard from "./pages/SupplierDashboard";
 import Suppliers from "./pages/Suppliers";
 import InventoryManagement from "./components/supplier/InventoryManagement";
+import OrderManagement from "./components/supplier/OrderManagement";
 import PendingPayments from "./components/supplier/PendingPayments";
 import PaymentSettings from "./components/supplier/PaymentSettings";
 import NotFound from "./pages/NotFound";
@@ -63,6 +64,7 @@ const App = () => (
           <Route path="/supplier-inventory" element={<InventoryManagement />} />
           <Route path="/supplier-payments" element={<PendingPayments />} />
           <Route path="/supplier-settings" element={<PaymentSettings />} />
+          <Route path="/supplier-orders" element={<OrderManagement />} />
           <Route path="/suppliers" element={<Suppliers />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

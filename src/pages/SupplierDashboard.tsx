@@ -17,6 +17,7 @@ import {
   Edit
 } from 'lucide-react';
 import AddProductForm from '@/components/supplier/AddProductForm';
+import SupplierLayout from '@/components/layout/SupplierLayout';
 
 interface SupplierData {
   id: string;
@@ -129,14 +130,17 @@ export default function SupplierDashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
-      </div>
+      <SupplierLayout>
+        <div className="flex items-center justify-center min-h-64">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+        </div>
+      </SupplierLayout>
     );
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <SupplierLayout>
+      <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
@@ -284,7 +288,7 @@ export default function SupplierDashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
-            <Button className="w-full">
+            <Button className="w-full" onClick={() => window.location.href = '/supplier-orders'}>
               <Eye className="h-4 w-4 mr-2" />
               View Orders
             </Button>
@@ -352,5 +356,6 @@ export default function SupplierDashboard() {
         </CardContent>
       </Card>
     </div>
+    </SupplierLayout>
   );
 }

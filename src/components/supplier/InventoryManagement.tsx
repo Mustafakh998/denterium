@@ -18,18 +18,29 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import AddProductForm from './AddProductForm';
+import ProductDetails from './ProductDetails';
+import EditProductForm from './EditProductForm';
 
 interface Product {
   id: string;
   name: string;
+  description: string;
+  brand: string;
+  model: string;
   sku: string;
+  unit_price: number;
   stock_quantity: number;
   min_stock_level: number;
   max_stock_level: number;
-  unit_price: number;
   currency: string;
   expiry_date: string;
+  manufacture_date: string;
+  warranty_months: number;
+  specifications: any;
+  images: string[];
   is_active: boolean;
+  created_at: string;
+  updated_at: string;
   category: { name: string } | null;
 }
 
@@ -311,12 +322,8 @@ function ProductTable({ products }: { products: Product[] }) {
               </TableCell>
               <TableCell>
                 <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="sm">
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="sm">
-                    <Edit className="h-4 w-4" />
-                  </Button>
+                  <ProductDetails product={product} />
+                  <EditProductForm product={product} onProductUpdated={() => window.location.reload()} />
                 </div>
               </TableCell>
             </TableRow>
