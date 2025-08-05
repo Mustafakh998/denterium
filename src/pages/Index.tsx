@@ -73,7 +73,10 @@ export default function Index() {
                       أدخل بيانات المريض الجديد
                     </DialogDescription>
                   </DialogHeader>
-                  <AddPatientForm onSuccess={() => setAddPatientOpen(false)} />
+                  <AddPatientForm 
+                    onSuccess={() => setAddPatientOpen(false)} 
+                    clinicId={profile?.clinic_id || "default"} 
+                  />
                 </DialogContent>
               </Dialog>
 
