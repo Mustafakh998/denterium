@@ -443,6 +443,70 @@ export type Database = {
           },
         ]
       }
+      prescriptions: {
+        Row: {
+          clinic_id: string | null
+          created_at: string
+          dentist_id: string | null
+          id: string
+          notes: string | null
+          patient_age: number | null
+          patient_id: string | null
+          patient_name: string
+          prescribed_drugs: Json
+          prescription_number: string | null
+          updated_at: string
+        }
+        Insert: {
+          clinic_id?: string | null
+          created_at?: string
+          dentist_id?: string | null
+          id?: string
+          notes?: string | null
+          patient_age?: number | null
+          patient_id?: string | null
+          patient_name: string
+          prescribed_drugs?: Json
+          prescription_number?: string | null
+          updated_at?: string
+        }
+        Update: {
+          clinic_id?: string | null
+          created_at?: string
+          dentist_id?: string | null
+          id?: string
+          notes?: string | null
+          patient_age?: number | null
+          patient_id?: string | null
+          patient_name?: string
+          prescribed_drugs?: Json
+          prescription_number?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prescriptions_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prescriptions_dentist_id_fkey"
+            columns: ["dentist_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prescriptions_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_categories: {
         Row: {
           created_at: string | null
@@ -1235,7 +1299,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_prescription_number: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
     }
     Enums: {
       payment_method:
