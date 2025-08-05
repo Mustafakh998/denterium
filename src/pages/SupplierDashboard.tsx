@@ -144,17 +144,17 @@ export default function SupplierDashboard() {
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold">Supplier Dashboard</h1>
+          <h1 className="text-3xl font-bold">لوحة قيادة المورد</h1>
           <p className="text-muted-foreground">
-            Welcome back, {supplier?.company_name}
+            أهلاً بعودتك، {supplier?.company_name}
           </p>
         </div>
         <div className="flex items-center space-x-2">
           <Badge variant={supplier?.verified ? "default" : "secondary"}>
-            {supplier?.verified ? "Verified" : "Pending Verification"}
+            {supplier?.verified ? "موثق" : "في انتظار التوثيق"}
           </Badge>
           <Badge variant={supplier?.is_active ? "default" : "destructive"}>
-            {supplier?.is_active ? "Active" : "Inactive"}
+            {supplier?.is_active ? "نشط" : "غير نشط"}
           </Badge>
         </div>
       </div>
@@ -163,52 +163,52 @@ export default function SupplierDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Products</CardTitle>
+            <CardTitle className="text-sm font-medium">إجمالي المنتجات</CardTitle>
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalProducts}</div>
             <p className="text-xs text-muted-foreground">
-              {stats.activeProducts} active
+              {stats.activeProducts} نشط
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
+            <CardTitle className="text-sm font-medium">إجمالي الطلبات</CardTitle>
             <ShoppingCart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalOrders}</div>
             <p className="text-xs text-muted-foreground">
-              {stats.pendingOrders} pending
+              {stats.pendingOrders} في الانتظار
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+            <CardTitle className="text-sm font-medium">إجمالي الإيرادات</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">${stats.totalRevenue.toFixed(2)}</div>
             <p className="text-xs text-muted-foreground">
-              All time revenue
+              إجمالي الإيرادات
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Rating</CardTitle>
+            <CardTitle className="text-sm font-medium">التقييم</CardTitle>
             <Star className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.averageRating.toFixed(1)}</div>
             <p className="text-xs text-muted-foreground">
-              {supplier?.total_reviews} reviews
+              {supplier?.total_reviews} تقييم
             </p>
           </CardContent>
         </Card>
@@ -220,16 +220,16 @@ export default function SupplierDashboard() {
           <CardHeader>
             <CardTitle className="flex items-center space-x-2 text-orange-800">
               <AlertTriangle className="h-5 w-5" />
-              <span>Low Stock Alert</span>
+              <span>تنبيه نقص المخزون</span>
             </CardTitle>
             <CardDescription className="text-orange-700">
-              You have {stats.lowStockProducts} products with low stock levels.
+              لديك {stats.lowStockProducts} منتج بمستوى مخزون منخفض.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Button variant="outline" size="sm">
               <Eye className="h-4 w-4 mr-2" />
-              View Low Stock Products
+              عرض المنتجات ذات المخزون المنخفض
             </Button>
           </CardContent>
         </Card>
@@ -239,22 +239,22 @@ export default function SupplierDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Inventory</CardTitle>
+            <CardTitle>المخزون</CardTitle>
             <CardDescription>
-              Manage products and stock levels
+              إدارة المنتجات ومستويات المخزون
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
             <Button className="w-full" onClick={() => window.location.href = '/supplier-inventory'}>
               <Package className="h-4 w-4 mr-2" />
-              View Inventory
+              عرض المخزون
             </Button>
             <AddProductForm 
               onProductAdded={() => fetchDashboardStats()} 
               trigger={
                 <Button variant="outline" className="w-full">
                   <Plus className="h-4 w-4 mr-2" />
-                  Add Product
+                  إضافة منتج
                 </Button>
               }
             />
@@ -263,57 +263,57 @@ export default function SupplierDashboard() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Pending Payments</CardTitle>
+            <CardTitle>المدفوعات المعلقة</CardTitle>
             <CardDescription>
-              Track dentist payments
+              تتبع مدفوعات أطباء الأسنان
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
             <Button className="w-full" onClick={() => window.location.href = '/supplier-payments'}>
               <TrendingUp className="h-4 w-4 mr-2" />
-              View Payments
+              عرض المدفوعات
             </Button>
             <Button variant="outline" className="w-full">
               <AlertTriangle className="h-4 w-4 mr-2" />
-              Overdue ({0})
+              متأخرة ({0})
             </Button>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Orders</CardTitle>
+            <CardTitle>الطلبات</CardTitle>
             <CardDescription>
-              Manage incoming orders
+              إدارة الطلبات الواردة
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
             <Button className="w-full" onClick={() => window.location.href = '/supplier-orders'}>
               <Eye className="h-4 w-4 mr-2" />
-              View Orders
+              عرض الطلبات
             </Button>
             <Button variant="outline" className="w-full">
               <ShoppingCart className="h-4 w-4 mr-2" />
-              Pending ({stats.pendingOrders})
+              في الانتظار ({stats.pendingOrders})
             </Button>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Settings</CardTitle>
+            <CardTitle>الإعدادات</CardTitle>
             <CardDescription>
-              Account & payment settings
+              إعدادات الحساب والدفع
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
             <Button className="w-full" onClick={() => window.location.href = '/supplier-settings'}>
               <Edit className="h-4 w-4 mr-2" />
-              Payment Settings
+              إعدادات الدفع
             </Button>
             <Button variant="outline" className="w-full">
               <Users className="h-4 w-4 mr-2" />
-              View Reviews
+              عرض التقييمات
             </Button>
           </CardContent>
         </Card>
@@ -322,9 +322,9 @@ export default function SupplierDashboard() {
       {/* Recent Activity */}
       <Card>
         <CardHeader>
-          <CardTitle>Recent Activity</CardTitle>
+          <CardTitle>النشاط الأخير</CardTitle>
           <CardDescription>
-            Latest updates from your supplier account
+            آخر التحديثات من حساب المورد الخاص بك
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -332,24 +332,24 @@ export default function SupplierDashboard() {
             <div className="flex items-center space-x-4">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
               <div className="flex-1">
-                <p className="text-sm font-medium">New order received</p>
-                <p className="text-xs text-muted-foreground">2 hours ago</p>
+                <p className="text-sm font-medium">تم استلام طلب جديد</p>
+                <p className="text-xs text-muted-foreground">منذ ساعتين</p>
               </div>
             </div>
             <Separator />
             <div className="flex items-center space-x-4">
               <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
               <div className="flex-1">
-                <p className="text-sm font-medium">Product stock updated</p>
-                <p className="text-xs text-muted-foreground">1 day ago</p>
+                <p className="text-sm font-medium">تم تحديث مخزون المنتج</p>
+                <p className="text-xs text-muted-foreground">منذ يوم واحد</p>
               </div>
             </div>
             <Separator />
             <div className="flex items-center space-x-4">
               <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
               <div className="flex-1">
-                <p className="text-sm font-medium">New customer review</p>
-                <p className="text-xs text-muted-foreground">3 days ago</p>
+                <p className="text-sm font-medium">تقييم عميل جديد</p>
+                <p className="text-xs text-muted-foreground">منذ 3 أيام</p>
               </div>
             </div>
           </div>

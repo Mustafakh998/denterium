@@ -154,7 +154,7 @@ export default function AddProductForm({ onProductAdded, trigger }: AddProductFo
   const defaultTrigger = (
     <Button>
       <Plus className="h-4 w-4 mr-2" />
-      Add Product
+      إضافة منتج
     </Button>
   );
 
@@ -165,67 +165,67 @@ export default function AddProductForm({ onProductAdded, trigger }: AddProductFo
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add New Product</DialogTitle>
+          <DialogTitle>إضافة منتج جديد</DialogTitle>
           <DialogDescription>
-            Add a new product to your inventory
+            إضافة منتج جديد إلى مخزونك
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Basic Information */}
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">Basic Information</h3>
+            <h3 className="text-lg font-medium">المعلومات الأساسية</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Product Name *</Label>
+                <Label htmlFor="name">اسم المنتج *</Label>
                 <Input
                   id="name"
                   value={formData.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
-                  placeholder="Enter product name"
+                  placeholder="أدخل اسم المنتج"
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="brand">Brand</Label>
+                <Label htmlFor="brand">العلامة التجارية</Label>
                 <Input
                   id="brand"
                   value={formData.brand}
                   onChange={(e) => handleInputChange('brand', e.target.value)}
-                  placeholder="Enter brand name"
+                  placeholder="أدخل اسم العلامة التجارية"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="model">Model</Label>
+                <Label htmlFor="model">الموديل</Label>
                 <Input
                   id="model"
                   value={formData.model}
                   onChange={(e) => handleInputChange('model', e.target.value)}
-                  placeholder="Enter model"
+                  placeholder="أدخل الموديل"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="sku">SKU</Label>
+                <Label htmlFor="sku">رمز المنتج</Label>
                 <Input
                   id="sku"
                   value={formData.sku}
                   onChange={(e) => handleInputChange('sku', e.target.value)}
-                  placeholder="Enter SKU"
+                  placeholder="أدخل رمز المنتج"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">الوصف</Label>
               <Textarea
                 id="description"
                 value={formData.description}
                 onChange={(e) => handleInputChange('description', e.target.value)}
-                placeholder="Enter product description"
+                placeholder="أدخل وصف المنتج"
                 rows={3}
               />
             </div>
@@ -233,11 +233,11 @@ export default function AddProductForm({ onProductAdded, trigger }: AddProductFo
 
           {/* Pricing */}
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">Pricing</h3>
+            <h3 className="text-lg font-medium">التسعير</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="unit_price">Unit Price *</Label>
+                <Label htmlFor="unit_price">سعر الوحدة *</Label>
                 <Input
                   id="unit_price"
                   type="number"
@@ -250,7 +250,7 @@ export default function AddProductForm({ onProductAdded, trigger }: AddProductFo
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="bulk_price">Bulk Price</Label>
+                <Label htmlFor="bulk_price">سعر الجملة</Label>
                 <Input
                   id="bulk_price"
                   type="number"
@@ -262,7 +262,7 @@ export default function AddProductForm({ onProductAdded, trigger }: AddProductFo
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="bulk_quantity">Bulk Quantity</Label>
+                <Label htmlFor="bulk_quantity">كمية الجملة</Label>
                 <Input
                   id="bulk_quantity"
                   type="number"
@@ -274,27 +274,27 @@ export default function AddProductForm({ onProductAdded, trigger }: AddProductFo
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="currency">Currency</Label>
+              <Label htmlFor="currency">العملة</Label>
               <select
                 id="currency"
                 value={formData.currency}
                 onChange={(e) => handleInputChange('currency', e.target.value)}
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <option value="USD">USD</option>
-                <option value="IQD">IQD</option>
-                <option value="EUR">EUR</option>
+                <option value="USD">دولار أمريكي</option>
+                <option value="IQD">دينار عراقي</option>
+                <option value="EUR">يورو</option>
               </select>
             </div>
           </div>
 
           {/* Inventory */}
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">Inventory</h3>
+            <h3 className="text-lg font-medium">المخزون</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="stock_quantity">Stock Quantity</Label>
+                <Label htmlFor="stock_quantity">كمية المخزون</Label>
                 <Input
                   id="stock_quantity"
                   type="number"
@@ -305,7 +305,7 @@ export default function AddProductForm({ onProductAdded, trigger }: AddProductFo
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="min_stock_level">Min Stock Level</Label>
+                <Label htmlFor="min_stock_level">الحد الأدنى للمخزون</Label>
                 <Input
                   id="min_stock_level"
                   type="number"
@@ -316,7 +316,7 @@ export default function AddProductForm({ onProductAdded, trigger }: AddProductFo
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="max_stock_level">Max Stock Level</Label>
+                <Label htmlFor="max_stock_level">الحد الأقصى للمخزون</Label>
                 <Input
                   id="max_stock_level"
                   type="number"
@@ -330,11 +330,11 @@ export default function AddProductForm({ onProductAdded, trigger }: AddProductFo
 
           {/* Dates & Settings */}
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">Additional Details</h3>
+            <h3 className="text-lg font-medium">التفاصيل الإضافية</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="expiry_date">Expiry Date</Label>
+                <Label htmlFor="expiry_date">تاريخ انتهاء الصلاحية</Label>
                 <Input
                   id="expiry_date"
                   type="date"
@@ -344,7 +344,7 @@ export default function AddProductForm({ onProductAdded, trigger }: AddProductFo
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="manufacture_date">Manufacture Date</Label>
+                <Label htmlFor="manufacture_date">تاريخ الصنع</Label>
                 <Input
                   id="manufacture_date"
                   type="date"
@@ -354,7 +354,7 @@ export default function AddProductForm({ onProductAdded, trigger }: AddProductFo
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="warranty_months">Warranty (Months)</Label>
+                <Label htmlFor="warranty_months">الضمان (بالأشهر)</Label>
                 <Input
                   id="warranty_months"
                   type="number"
@@ -365,12 +365,12 @@ export default function AddProductForm({ onProductAdded, trigger }: AddProductFo
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="barcode">Barcode</Label>
+                <Label htmlFor="barcode">الباركود</Label>
                 <Input
                   id="barcode"
                   value={formData.barcode}
                   onChange={(e) => handleInputChange('barcode', e.target.value)}
-                  placeholder="Enter barcode"
+                  placeholder="أدخل الباركود"
                 />
               </div>
             </div>
@@ -382,7 +382,7 @@ export default function AddProductForm({ onProductAdded, trigger }: AddProductFo
                   checked={formData.requires_prescription}
                   onCheckedChange={(checked) => handleInputChange('requires_prescription', checked)}
                 />
-                <Label htmlFor="requires_prescription">Requires Prescription</Label>
+                <Label htmlFor="requires_prescription">يتطلب وصفة طبية</Label>
               </div>
 
               <div className="flex items-center space-x-2">
@@ -391,7 +391,7 @@ export default function AddProductForm({ onProductAdded, trigger }: AddProductFo
                   checked={formData.is_active}
                   onCheckedChange={(checked) => handleInputChange('is_active', checked)}
                 />
-                <Label htmlFor="is_active">Active</Label>
+                <Label htmlFor="is_active">نشط</Label>
               </div>
             </div>
           </div>
@@ -399,11 +399,11 @@ export default function AddProductForm({ onProductAdded, trigger }: AddProductFo
           <div className="flex justify-end space-x-2">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               <X className="h-4 w-4 mr-2" />
-              Cancel
+              إلغاء
             </Button>
             <Button type="submit" disabled={saving}>
               <Save className="h-4 w-4 mr-2" />
-              {saving ? 'Adding...' : 'Add Product'}
+              {saving ? 'جاري الإضافة...' : 'إضافة المنتج'}
             </Button>
           </div>
         </form>

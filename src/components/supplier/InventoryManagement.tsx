@@ -127,8 +127,8 @@ export default function InventoryManagement() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold">Inventory Management</h2>
-          <p className="text-muted-foreground">Monitor your product inventory and stock levels</p>
+          <h2 className="text-2xl font-bold">إدارة المخزون</h2>
+          <p className="text-muted-foreground">مراقبة مخزون منتجاتك ومستويات المخزون</p>
         </div>
         <AddProductForm onProductAdded={fetchProducts} />
       </div>
@@ -139,7 +139,7 @@ export default function InventoryManagement() {
           <Alert className="border-orange-200 bg-orange-50">
             <AlertTriangle className="h-4 w-4 text-orange-600" />
             <AlertDescription className="text-orange-800">
-              <strong>{lowStockProducts.length}</strong> products have low stock levels
+              <strong>{lowStockProducts.length}</strong> منتج لديه مستوى مخزون منخفض
             </AlertDescription>
           </Alert>
         )}
@@ -148,7 +148,7 @@ export default function InventoryManagement() {
           <Alert className="border-red-200 bg-red-50">
             <AlertTriangle className="h-4 w-4 text-red-600" />
             <AlertDescription className="text-red-800">
-              <strong>{expiredProducts.length}</strong> products have expired
+              <strong>{expiredProducts.length}</strong> منتج منتهي الصلاحية
             </AlertDescription>
           </Alert>
         )}
@@ -157,7 +157,7 @@ export default function InventoryManagement() {
           <Alert className="border-yellow-200 bg-yellow-50">
             <Clock className="h-4 w-4 text-yellow-600" />
             <AlertDescription className="text-yellow-800">
-              <strong>{expiringSoon.length}</strong> products expire within 30 days
+              <strong>{expiringSoon.length}</strong> منتج تنتهي صلاحيته خلال 30 يوماً
             </AlertDescription>
           </Alert>
         )}
@@ -165,10 +165,10 @@ export default function InventoryManagement() {
 
       <Tabs defaultValue="all" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="all">All Products ({products.length})</TabsTrigger>
-          <TabsTrigger value="low-stock">Low Stock ({lowStockProducts.length})</TabsTrigger>
-          <TabsTrigger value="expiring">Expiring ({expiringSoon.length})</TabsTrigger>
-          <TabsTrigger value="expired">Expired ({expiredProducts.length})</TabsTrigger>
+          <TabsTrigger value="all">جميع المنتجات ({products.length})</TabsTrigger>
+          <TabsTrigger value="low-stock">مخزون منخفض ({lowStockProducts.length})</TabsTrigger>
+          <TabsTrigger value="expiring">تنتهي قريباً ({expiringSoon.length})</TabsTrigger>
+          <TabsTrigger value="expired">منتهية الصلاحية ({expiredProducts.length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="all">
