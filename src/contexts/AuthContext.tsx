@@ -33,6 +33,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profileLoading, setProfileLoading] = useState(true);
   const [profile, setProfile] = useState<any>(null);
   const { toast } = useToast();
+  
+  // Prevent multiple simultaneous profile requests
+  const [isProfileFetching, setIsProfileFetching] = useState(false);
 
   const refreshProfile = useCallback(async () => {
     if (!user) {
@@ -41,7 +44,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
     
+    // Prevent multiple simultaneous requests
+    if (isProfileFetching) {
+      console.log("Profile fetch already in progress, skipping");
+      return;
+    }
+    
     console.log("Fetching profile for user:", user.id);
+    setIsProfileFetching(true);
     setProfileLoading(true);
     
     try {
@@ -55,29 +65,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (error) {
         console.error("Error fetching profile:", error);
-        // Keep the existing profile if fetch fails due to network issues
-        if (!profile) {
-          setProfile(null);
-        }
+        // Don't constantly retry on network errors
         setProfileLoading(false);
+        setIsProfileFetching(false);
         return;
       }
       
       console.log("Setting profile:", data);
       setProfile(data);
       setProfileLoading(false);
+      setIsProfileFetching(false);
     } catch (error) {
       console.error("Error in refreshProfile:", error);
-      // Keep the existing profile if fetch fails due to network issues
-      if (!profile) {
-        setProfile(null);
-      }
+      // Don't retry immediately on network errors
       setProfileLoading(false);
+      setIsProfileFetching(false);
     }
-  }, [user, profile]);
+  }, [user, isProfileFetching]);
 
   useEffect(() => {
     let mounted = true;
+    let profileFetched = false;
     
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -89,12 +97,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session?.user ?? null);
         setLoading(false);
         
-        if (session?.user) {
-          // Immediately fetch profile without setTimeout
-          refreshProfile();
-        } else {
+        if (session?.user && !profileFetched) {
+          profileFetched = true;
+          // Use setTimeout to avoid blocking the auth state change
+          setTimeout(() => {
+            if (mounted) {
+              refreshProfile();
+            }
+          }, 100);
+        } else if (!session?.user) {
           setProfile(null);
           setProfileLoading(false);
+          profileFetched = false;
         }
       }
     );
@@ -108,8 +122,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(session?.user ?? null);
       setLoading(false);
       
-      if (session?.user) {
-        refreshProfile();
+      if (session?.user && !profileFetched) {
+        profileFetched = true;
+        setTimeout(() => {
+          if (mounted) {
+            refreshProfile();
+          }
+        }, 100);
       } else {
         setProfileLoading(false);
       }
@@ -119,7 +138,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [refreshProfile]); // Include refreshProfile in dependencies
+  }, []); // NO dependencies to prevent infinite loops
 
   const signIn = async (email: string, password: string) => {
     try {

@@ -71,7 +71,7 @@ export default function Patients() {
     }
     
     if (!profile?.clinic_id) {
-      console.log("No clinic_id, setting loading to false");
+      console.log("No clinic_id found in profile:", profile);
       setLoading(false);
       return;
     }
@@ -159,7 +159,8 @@ export default function Patients() {
     return `${age} سنة`;
   };
 
-  if (loading) {
+  // Show loading while profile or patients are loading
+  if (loading || profileLoading) {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-64">
@@ -169,8 +170,8 @@ export default function Patients() {
     );
   }
 
-  // Show no clinic setup message if user has no clinic_id
-  if (!loading && !profile?.clinic_id) {
+  // Show no clinic setup message only after profile is loaded and clinic_id is null
+  if (!profileLoading && !profile?.clinic_id) {
     return (
       <DashboardLayout>
         <div className="flex flex-col items-center justify-center h-64 space-y-4">
