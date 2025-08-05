@@ -35,9 +35,18 @@ interface DashboardLayoutProps {
 }
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
-  const { user, signOut, profile } = useAuth();
+  const { user, signOut, profile, profileLoading, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Debug profile loading
+  console.log("DashboardLayout - Profile:", profile);
+  console.log("DashboardLayout - Profile Loading:", profileLoading);
+
+  const handleRefreshProfile = async () => {
+    console.log("Manually refreshing profile...");
+    await refreshProfile();
+  };
 
   const getInitials = (firstName?: string, lastName?: string) => {
     return `${firstName?.charAt(0) || ""}${lastName?.charAt(0) || ""}`.toUpperCase();
@@ -55,12 +64,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { icon: Heart, label: "التواصل", href: "/communication" },
     { icon: ShieldCheck, label: "الموردين", href: "/suppliers" },
     { icon: CreditCard, label: "الاشتراك", href: "/subscription" },
-    ...(profile?.role === 'admin' ? [
+    ...(profile?.role === 'admin' || profile?.system_role === 'super_admin' ? [
       { icon: ShieldCheck, label: "إدارة المدفوعات", href: "/admin/payments" },
       { icon: UserCheck, label: "إدارة المستخدمين", href: "/admin/users" }
     ] : []),
     ...(profile?.system_role === 'super_admin' ? [
-      { icon: ShieldCheck, label: "إدارة النظام", href: "/super-admin" }
+      { icon: ShieldCheck, label: "لوحة المدير العام", href: "/super-admin" }
     ] : []),
     { icon: Settings, label: "الإعدادات", href: "/settings" },
   ];
@@ -76,11 +85,23 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 دنتال برو 
               </h1>
               <Heart className="h-8 w-8 text-blue-600" />
+              {/* Debug info - remove after fixing */}
+              {profile && (
+                <span className="text-xs text-gray-500">
+                  Role: {profile.role} | System: {profile.system_role}
+                </span>
+              )}
+              {!profile && (
+                <Button onClick={handleRefreshProfile} size="sm" variant="outline">
+                  تحديث الملف الشخصي
+                </Button>
+              )}
             </div>
             
             <div className="flex items-center space-x-reverse space-x-4">
               <Badge variant="outline" className="capitalize">
-                {profile?.role === 'dentist' ? 'طبيب أسنان' :
+                {profile?.system_role === 'super_admin' ? 'مدير عام' :
+                 profile?.role === 'dentist' ? 'طبيب أسنان' :
                  profile?.role === 'assistant' ? 'مساعد' :
                  profile?.role === 'receptionist' ? 'موظف استقبال' :
                  profile?.role === 'admin' ? 'مدير' :
