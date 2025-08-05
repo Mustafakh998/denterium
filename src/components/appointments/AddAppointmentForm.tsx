@@ -16,6 +16,7 @@ import { ar } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/contexts/AuthContext";
 
 const formSchema = z.object({
   patient_id: z.string().min(1, "يجب اختيار مريض"),
@@ -36,6 +37,7 @@ interface AddAppointmentFormProps {
 export default function AddAppointmentForm({ onSuccess }: AddAppointmentFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { profile } = useAuth();
 
   const { data: patients = [] } = useQuery({
     queryKey: ['patients'],
@@ -59,6 +61,15 @@ export default function AddAppointmentForm({ onSuccess }: AddAppointmentFormProp
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    if (!profile?.clinic_id) {
+      toast({
+        title: "خطأ",
+        description: "لا يمكن تحديد العيادة، يرجى المحاولة لاحقاً",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
       // Combine date and time
@@ -66,10 +77,24 @@ export default function AddAppointmentForm({ onSuccess }: AddAppointmentFormProp
       const appointmentDateTime = new Date(values.appointment_date);
       appointmentDateTime.setHours(hours, minutes, 0, 0);
 
+      console.log('Creating appointment with data:', {
+        patient_id: values.patient_id,
+        clinic_id: profile.clinic_id,
+        dentist_id: profile.id,
+        appointment_date: appointmentDateTime.toISOString(),
+        duration_minutes: values.duration_minutes,
+        chief_complaint: values.chief_complaint,
+        treatment_type: values.treatment_type,
+        notes: values.notes,
+        status: 'scheduled',
+      });
+
       const { error } = await supabase
         .from('appointments')
         .insert({
           patient_id: values.patient_id,
+          clinic_id: profile.clinic_id,
+          dentist_id: profile.id,
           appointment_date: appointmentDateTime.toISOString(),
           duration_minutes: values.duration_minutes,
           chief_complaint: values.chief_complaint,
@@ -78,7 +103,10 @@ export default function AddAppointmentForm({ onSuccess }: AddAppointmentFormProp
           status: 'scheduled',
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
 
       toast({
         title: "تم إضافة الموعد بنجاح",
@@ -89,7 +117,7 @@ export default function AddAppointmentForm({ onSuccess }: AddAppointmentFormProp
       console.error('Error adding appointment:', error);
       toast({
         title: "خطأ في إضافة الموعد",
-        description: "حدث خطأ أثناء إضافة الموعد",
+        description: error.message || "حدث خطأ أثناء إضافة الموعد",
         variant: "destructive",
       });
     } finally {
