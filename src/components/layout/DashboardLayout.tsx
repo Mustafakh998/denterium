@@ -26,6 +26,8 @@ import {
   UserCheck,
   Clock,
   TrendingUp,
+  CreditCard,
+  ShieldCheck,
 } from "lucide-react";
 
 interface DashboardLayoutProps {
@@ -51,6 +53,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { icon: UserCheck, label: "الموظفين", href: "/staff" },
     { icon: TrendingUp, label: "التقارير", href: "/reports" },
     { icon: Heart, label: "التواصل", href: "/communication" },
+    { icon: CreditCard, label: "الاشتراك", href: "/subscription" },
+    ...(profile?.role === 'admin' ? [
+      { icon: ShieldCheck, label: "إدارة المدفوعات", href: "/admin/payments" }
+    ] : []),
     { icon: Settings, label: "الإعدادات", href: "/settings" },
   ];
 

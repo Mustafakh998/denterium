@@ -16,6 +16,8 @@ import Settings from "./pages/Settings";
 import Staff from "./pages/Staff";
 import Reports from "./pages/Reports";
 import Features from "./pages/Features";
+import Subscription from "./pages/Subscription";
+import AdminPayments from "./pages/AdminPayments";
 import Communication from "./pages/Communication";
 import Inventory from "./pages/Inventory";
 import Backup from "./pages/Backup";
@@ -44,6 +46,8 @@ const App = () => (
             <Route path="/staff" element={<Staff />} />
             <Route path="/reports" element={<Reports />} />
             <Route path="/features" element={<Features />} />
+            <Route path="/subscription" element={<Subscription />} />
+            <Route path="/admin/payments" element={<AdminPayments />} />
             <Route path="/communication" element={<Communication />} />
             <Route path="/inventory" element={<Inventory />} />
             <Route path="/backup" element={<Backup />} />
