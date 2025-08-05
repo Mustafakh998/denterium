@@ -7,6 +7,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  profileLoading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string, userData?: any) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
@@ -29,16 +30,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(true);
   const [profile, setProfile] = useState<any>(null);
   const { toast } = useToast();
 
   const refreshProfile = useCallback(async () => {
     if (!user) {
       console.log("No user found, skipping profile fetch");
+      setProfileLoading(false);
       return;
     }
     
     console.log("Fetching profile for user:", user.id);
+    setProfileLoading(true);
     
     try {
       const { data, error } = await supabase
@@ -51,19 +55,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (error) {
         console.error("Error fetching profile:", error);
-        // Don't return early, set profile to null so the UI can handle it
-        setProfile(null);
+        // Keep the existing profile if fetch fails due to network issues
+        if (!profile) {
+          setProfile(null);
+        }
+        setProfileLoading(false);
         return;
       }
       
       console.log("Setting profile:", data);
       setProfile(data);
+      setProfileLoading(false);
     } catch (error) {
       console.error("Error in refreshProfile:", error);
-      // Set profile to null on error so UI can handle it
-      setProfile(null);
+      // Keep the existing profile if fetch fails due to network issues
+      if (!profile) {
+        setProfile(null);
+      }
+      setProfileLoading(false);
     }
-  }, [user]);
+  }, [user, profile]);
 
   useEffect(() => {
     let mounted = true;
@@ -83,6 +94,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           refreshProfile();
         } else {
           setProfile(null);
+          setProfileLoading(false);
         }
       }
     );
@@ -98,6 +110,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (session?.user) {
         refreshProfile();
+      } else {
+        setProfileLoading(false);
       }
     });
 
@@ -216,6 +230,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     user,
     session,
     loading,
+    profileLoading,
     signIn,
     signUp,
     signOut,

@@ -54,7 +54,7 @@ interface Treatment {
 }
 
 export default function Treatments() {
-  const { user, profile } = useAuth();
+  const { user, profile, profileLoading } = useAuth();
   const { toast } = useToast();
   const [treatments, setTreatments] = useState<Treatment[]>([]);
   const [filteredTreatments, setFilteredTreatments] = useState<Treatment[]>([]);
@@ -66,6 +66,11 @@ export default function Treatments() {
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
 
   const fetchTreatments = async () => {
+    if (profileLoading) {
+      console.log("Profile still loading, waiting...");
+      return;
+    }
+    
     if (!profile?.clinic_id) {
       setLoading(false);
       return;
@@ -111,10 +116,10 @@ export default function Treatments() {
   };
 
   useEffect(() => {
-    if (profile?.clinic_id) {
+    if (!profileLoading) {
       fetchTreatments();
     }
-  }, [profile?.clinic_id]);
+  }, [profile?.clinic_id, profileLoading]);
 
   const filterTreatments = () => {
     if (!searchTerm.trim()) {
@@ -196,7 +201,7 @@ export default function Treatments() {
     .reduce((sum, t) => sum + (t.patient_paid || 0), 0);
 
   // Show no clinic setup message if user has no clinic_id
-  if (!loading && !profile?.clinic_id) {
+  if (!profileLoading && !loading && !profile?.clinic_id) {
     return (
       <DashboardLayout>
         <div className="flex flex-col items-center justify-center h-64 space-y-4">
@@ -214,7 +219,7 @@ export default function Treatments() {
     );
   }
 
-  if (loading) {
+  if (loading || profileLoading) {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center min-h-96">

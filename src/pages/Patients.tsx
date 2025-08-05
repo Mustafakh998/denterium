@@ -40,7 +40,7 @@ import EditPatientForm from "@/components/patients/EditPatientForm";
 import PatientDetails from "@/components/patients/PatientDetails";
 
 export default function Patients() {
-  const { profile } = useAuth();
+  const { profile, profileLoading } = useAuth();
   const { toast } = useToast();
   const [patients, setPatients] = useState([]);
   const [filteredPatients, setFilteredPatients] = useState([]);
@@ -52,15 +52,24 @@ export default function Patients() {
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
 
   useEffect(() => {
-    fetchPatients();
-  }, [profile?.clinic_id]);
+    if (!profileLoading) {
+      fetchPatients();
+    }
+  }, [profile?.clinic_id, profileLoading]);
 
   useEffect(() => {
     filterPatients();
   }, [patients, searchTerm]);
 
   const fetchPatients = async () => {
-    console.log("fetchPatients called, profile:", profile);
+    console.log("fetchPatients called, profile:", profile, "profileLoading:", profileLoading);
+    
+    // Wait for profile to load before checking clinic_id
+    if (profileLoading) {
+      console.log("Profile still loading, waiting...");
+      return;
+    }
+    
     if (!profile?.clinic_id) {
       console.log("No clinic_id, setting loading to false");
       setLoading(false);

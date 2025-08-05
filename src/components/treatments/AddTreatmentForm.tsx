@@ -21,7 +21,7 @@ interface AddTreatmentFormProps {
 }
 
 export default function AddTreatmentForm({ onSuccess }: AddTreatmentFormProps) {
-  const { profile } = useAuth();
+  const { profile, profileLoading } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [patients, setPatients] = useState<Patient[]>([]);
@@ -40,10 +40,17 @@ export default function AddTreatmentForm({ onSuccess }: AddTreatmentFormProps) {
   });
 
   useEffect(() => {
-    fetchPatients();
-  }, [profile?.clinic_id]);
+    if (!profileLoading) {
+      fetchPatients();
+    }
+  }, [profile?.clinic_id, profileLoading]);
 
   const fetchPatients = async () => {
+    if (profileLoading) {
+      console.log("Profile still loading, waiting...");
+      return;
+    }
+    
     if (!profile?.clinic_id) {
       console.log("No clinic_id available for fetching patients");
       return;
