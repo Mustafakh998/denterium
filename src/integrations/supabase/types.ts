@@ -198,6 +198,85 @@ export type Database = {
           },
         ]
       }
+      manual_payments: {
+        Row: {
+          amount_iqd: number
+          clinic_id: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          payment_method: Database["public"]["Enums"]["payment_method"]
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          screenshot_url: string
+          sender_name: string
+          sender_phone: string
+          status: Database["public"]["Enums"]["payment_status"]
+          subscription_id: string | null
+          transaction_reference: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount_iqd: number
+          clinic_id?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          payment_method: Database["public"]["Enums"]["payment_method"]
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          screenshot_url: string
+          sender_name: string
+          sender_phone: string
+          status?: Database["public"]["Enums"]["payment_status"]
+          subscription_id?: string | null
+          transaction_reference?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount_iqd?: number
+          clinic_id?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          payment_method?: Database["public"]["Enums"]["payment_method"]
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          screenshot_url?: string
+          sender_name?: string
+          sender_phone?: string
+          status?: Database["public"]["Enums"]["payment_status"]
+          subscription_id?: string | null
+          transaction_reference?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "manual_payments_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "manual_payments_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "manual_payments_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       medical_images: {
         Row: {
           annotations: Json | null
@@ -415,6 +494,92 @@ export type Database = {
         }
         Relationships: []
       }
+      subscription_features: {
+        Row: {
+          created_at: string
+          feature_limit: number | null
+          feature_name: string
+          id: string
+          is_enabled: boolean
+          plan: Database["public"]["Enums"]["subscription_plan"]
+        }
+        Insert: {
+          created_at?: string
+          feature_limit?: number | null
+          feature_name: string
+          id?: string
+          is_enabled?: boolean
+          plan: Database["public"]["Enums"]["subscription_plan"]
+        }
+        Update: {
+          created_at?: string
+          feature_limit?: number | null
+          feature_name?: string
+          id?: string
+          is_enabled?: boolean
+          plan?: Database["public"]["Enums"]["subscription_plan"]
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          amount_iqd: number
+          amount_usd: number
+          clinic_id: string | null
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string
+          payment_method: Database["public"]["Enums"]["payment_method"]
+          plan: Database["public"]["Enums"]["subscription_plan"]
+          status: Database["public"]["Enums"]["payment_status"]
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          trial_end: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount_iqd: number
+          amount_usd: number
+          clinic_id?: string | null
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          payment_method: Database["public"]["Enums"]["payment_method"]
+          plan: Database["public"]["Enums"]["subscription_plan"]
+          status?: Database["public"]["Enums"]["payment_status"]
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          trial_end?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount_iqd?: number
+          amount_usd?: number
+          clinic_id?: string | null
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          payment_method?: Database["public"]["Enums"]["payment_method"]
+          plan?: Database["public"]["Enums"]["subscription_plan"]
+          status?: Database["public"]["Enums"]["payment_status"]
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          trial_end?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       treatments: {
         Row: {
           appointment_id: string | null
@@ -515,6 +680,9 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      payment_method: "stripe" | "qi_card" | "zain_cash"
+      payment_status: "pending" | "approved" | "rejected" | "expired"
+      subscription_plan: "basic" | "premium" | "enterprise"
       user_role: "admin" | "dentist" | "assistant" | "receptionist" | "patient"
     }
     CompositeTypes: {
@@ -643,6 +811,9 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      payment_method: ["stripe", "qi_card", "zain_cash"],
+      payment_status: ["pending", "approved", "rejected", "expired"],
+      subscription_plan: ["basic", "premium", "enterprise"],
       user_role: ["admin", "dentist", "assistant", "receptionist", "patient"],
     },
   },
