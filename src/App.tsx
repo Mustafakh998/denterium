@@ -30,6 +30,7 @@ import InventoryManagement from "./components/supplier/InventoryManagement";
 import OrderManagement from "./components/supplier/OrderManagement";
 import PendingPayments from "./components/supplier/PendingPayments";
 import PaymentSettings from "./components/supplier/PaymentSettings";
+import CreateClinic from "./pages/CreateClinic";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -67,7 +68,8 @@ const App = () => (
           <Route path="/supplier-payments" element={<PendingPayments />} />
           <Route path="/supplier-settings" element={<PaymentSettings />} />
           <Route path="/supplier-orders" element={<OrderManagement />} />
-          <Route path="/suppliers" element={<Suppliers />} />
+           <Route path="/suppliers" element={<Suppliers />} />
+           <Route path="/create-clinic" element={<CreateClinic />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

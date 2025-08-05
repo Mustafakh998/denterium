@@ -3,18 +3,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import DashboardStats from "@/components/dashboard/DashboardStats";
 import ComingSoonFeatures from "@/components/features/ComingSoonFeatures";
 import AddPatientForm from "@/components/patients/AddPatientForm";
 import AddAppointmentForm from "@/components/appointments/AddAppointmentForm";
 import AddInvoiceForm from "@/components/billing/AddInvoiceForm";
-import { User, Calendar, FileText, Activity } from "lucide-react";
+import { User, Calendar, FileText, Activity, Building2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function Index() {
-  const { user, profile, loading } = useAuth();
+  const { user, profile, loading, signOut } = useAuth();
+  const navigate = useNavigate();
   const [addPatientOpen, setAddPatientOpen] = useState(false);
   const [addAppointmentOpen, setAddAppointmentOpen] = useState(false);
   const [addInvoiceOpen, setAddInvoiceOpen] = useState(false);
@@ -59,6 +60,39 @@ export default function Index() {
   // Redirect suppliers to their dashboard
   if (profile?.role === 'supplier' || isSupplier) {
     return <Navigate to="/supplier-dashboard" replace />;
+  }
+  
+  // Check if user needs to create a clinic
+  if (user && profile && !profile.clinic_id) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-6">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <Building2 className="h-16 w-16 text-primary mx-auto mb-4" />
+            <CardTitle className="text-xl text-gray-900 dark:text-white">
+              مرحباً {profile.first_name}!
+            </CardTitle>
+            <CardDescription>
+              لإكمال إعداد حسابك، تحتاج لإنشاء عيادة أو الانضمام لعيادة موجودة
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <Button onClick={() => navigate('/create-clinic')} className="w-full">
+                <Building2 className="ml-2 h-4 w-4" />
+                إنشاء عيادة جديدة
+              </Button>
+              <Button variant="outline" onClick={() => navigate('/subscription')} className="w-full">
+                عرض الاشتراكات
+              </Button>
+              <Button variant="ghost" onClick={signOut} className="w-full">
+                تسجيل الخروج
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   return (
