@@ -683,7 +683,12 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      payment_method: "stripe" | "qi_card" | "zain_cash" | "bank_transfer"
+      payment_method:
+        | "stripe"
+        | "qi_card"
+        | "zain_cash"
+        | "bank_transfer"
+        | "fib"
       payment_status: "pending" | "approved" | "rejected" | "expired"
       subscription_plan: "basic" | "premium" | "enterprise"
       system_role: "super_admin" | "support" | "user"
@@ -815,7 +820,13 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      payment_method: ["stripe", "qi_card", "zain_cash", "bank_transfer"],
+      payment_method: [
+        "stripe",
+        "qi_card",
+        "zain_cash",
+        "bank_transfer",
+        "fib",
+      ],
       payment_status: ["pending", "approved", "rejected", "expired"],
       subscription_plan: ["basic", "premium", "enterprise"],
       system_role: ["super_admin", "support", "user"],

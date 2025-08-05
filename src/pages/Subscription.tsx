@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { FibPaymentDialog } from "@/components/billing/FibPaymentDialog";
 
 interface SubscriptionData {
   subscribed: boolean;
@@ -330,15 +331,12 @@ export default function Subscription() {
                 </ul>
                 
                 <div className="space-y-2">
-                  {/* Credit Card Payment - Coming Soon */}
-                  <Button
-                    variant="outline"
-                    disabled
-                    className="w-full opacity-50"
-                  >
-                    <CreditCard className="h-4 w-4 ml-2" />
-                    الدفع بالبطاقة الائتمانية (قريباً)
-                  </Button>
+                  {/* FIB Credit Card Payment */}
+                  <FibPaymentDialog 
+                    planId={plan.id} 
+                    planName={plan.name} 
+                    price={parseInt(plan.price.replace(/[^\d]/g, ''))} 
+                  />
                   
                   {/* Local Payment Method */}
                   <ManualPaymentDialog planId={plan.id} planName={plan.name} price={plan.price} />
@@ -348,7 +346,7 @@ export default function Subscription() {
                       طرق الدفع المتاحة:
                     </p>
                     <div className="text-xs text-blue-600 dark:text-blue-400 space-y-1">
-                      <p>💳 بطاقة ائتمانية (قريباً)</p>
+                      <p>🏛️ بنك العراق الأول (FIB)</p>
                       <p>🟢 كي كارد (Qi Card)</p>
                       <p>🟡 زين كاش (Zain Cash)</p>
                       <p>🏦 تحويل بنكي مباشر</p>
