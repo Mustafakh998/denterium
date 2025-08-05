@@ -81,56 +81,72 @@ serve(async (req) => {
     }
 
     // Create Stripe checkout session
-    const session = await stripe.checkout.sessions.create({
-      customer: customerId,
-      line_items: [
-        {
-          price_data: {
-            currency: "usd",
-            product_data: { 
-              name: `نظام إدارة العيادة - ${plan === 'basic' ? 'أساسي' : plan === 'premium' ? 'متميز' : 'مؤسسي'}`,
-              description: `خطة ${plan} - ${planPricing[plan].iqd} دينار عراقي شهرياً`
+    try {
+      const session = await stripe.checkout.sessions.create({
+        customer: customerId,
+        line_items: [
+          {
+            price_data: {
+              currency: "usd",
+              product_data: { 
+                name: `نظام إدارة العيادة - ${plan === 'basic' ? 'أساسي' : plan === 'premium' ? 'متميز' : 'مؤسسي'}`,
+                description: `خطة ${plan} - ${planPricing[plan].iqd} دينار عراقي شهرياً`
+              },
+              unit_amount: Math.round(planPricing[plan].usd * 100), // Convert to cents
+              recurring: { interval: "month" },
             },
-            unit_amount: Math.round(planPricing[plan].usd * 100), // Convert to cents
-            recurring: { interval: "month" },
+            quantity: 1,
           },
-          quantity: 1,
-        },
-      ],
-      mode: "subscription",
-      success_url: `${req.headers.get("origin")}/subscription-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${req.headers.get("origin")}/subscription-cancel`,
-      metadata: {
-        userId: user.id,
-        clinicId: profile.clinic_id,
-        plan: plan
-      }
-    });
-
-    logStep("Created checkout session", { sessionId: session.id });
-
-    // Create pending subscription record
-    const { error: subscriptionError } = await supabaseClient
-      .from('subscriptions')
-      .insert({
-        clinic_id: profile.clinic_id,
-        plan: plan,
-        status: 'pending',
-        amount_iqd: planPricing[plan].iqd,
-        amount_usd: planPricing[plan].usd,
-        payment_method: 'stripe',
-        stripe_customer_id: customerId
+        ],
+        mode: "subscription",
+        success_url: `${req.headers.get("origin")}/subscription-success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${req.headers.get("origin")}/subscription-cancel`,
+        metadata: {
+          userId: user.id,
+          clinicId: profile.clinic_id,
+          plan: plan
+        }
       });
 
-    if (subscriptionError) {
-      logStep("Error creating subscription record", subscriptionError);
-      throw subscriptionError;
-    }
+      logStep("Created checkout session", { sessionId: session.id });
 
-    return new Response(JSON.stringify({ url: session.url }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 200,
-    });
+      // Create pending subscription record
+      const { error: subscriptionError } = await supabaseClient
+        .from('subscriptions')
+        .insert({
+          clinic_id: profile.clinic_id,
+          plan: plan,
+          status: 'pending',
+          amount_iqd: planPricing[plan].iqd,
+          amount_usd: planPricing[plan].usd,
+          payment_method: 'stripe',
+          stripe_customer_id: customerId
+        });
+
+      if (subscriptionError) {
+        logStep("Error creating subscription record", subscriptionError);
+        throw subscriptionError;
+      }
+
+      return new Response(JSON.stringify({ url: session.url }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    } catch (stripeError: any) {
+      // Handle specific Stripe errors
+      const stripeErrorMessage = stripeError.message || String(stripeError);
+      logStep("Stripe error", { message: stripeErrorMessage });
+      
+      if (stripeErrorMessage.includes('business name')) {
+        throw new Error("In order to use Checkout, you must set an account or business name at https://dashboard.stripe.com/account.");
+      }
+      
+      if (stripeErrorMessage.includes('rate limit')) {
+        throw new Error("Too many requests. Please wait a moment and try again.");
+      }
+      
+      throw stripeError;
+    }
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logStep("ERROR in create-subscription", { message: errorMessage });

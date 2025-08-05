@@ -79,63 +79,78 @@ serve(async (req) => {
     }
 
     // If no active subscription found, check Stripe for credit card subscriptions
-    const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-    
-    if (customers.data.length > 0) {
-      const customerId = customers.data[0].id;
-      logStep("Found Stripe customer", { customerId });
+    try {
+      const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
+      const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+      
+      if (customers.data.length > 0) {
+        const customerId = customers.data[0].id;
+        logStep("Found Stripe customer", { customerId });
 
-      const subscriptions = await stripe.subscriptions.list({
-        customer: customerId,
-        status: "active",
-        limit: 1,
-      });
-
-      if (subscriptions.data.length > 0) {
-        const stripeSubscription = subscriptions.data[0];
-        const subscriptionEnd = new Date(stripeSubscription.current_period_end * 1000).toISOString();
-        
-        // Determine plan from price
-        const priceId = stripeSubscription.items.data[0].price.id;
-        const price = await stripe.prices.retrieve(priceId);
-        const amount = price.unit_amount || 0;
-        
-        let plan = 'basic';
-        if (amount >= 2000) plan = 'enterprise'; // $20+
-        else if (amount >= 1500) plan = 'premium'; // $15+
-        
-        logStep("Found active Stripe subscription", { 
-          subscriptionId: stripeSubscription.id, 
-          plan, 
-          endDate: subscriptionEnd 
+        const subscriptions = await stripe.subscriptions.list({
+          customer: customerId,
+          status: "active",
+          limit: 1,
         });
 
-        // Update our database
-        await supabaseClient
-          .from('subscriptions')
-          .upsert({
-            clinic_id: profile.clinic_id,
-            plan: plan,
-            status: 'approved',
-            amount_iqd: plan === 'basic' ? 10000 : plan === 'premium' ? 20000 : 30000,
-            amount_usd: amount / 100,
-            payment_method: 'stripe',
-            stripe_subscription_id: stripeSubscription.id,
-            stripe_customer_id: customerId,
-            current_period_start: new Date(stripeSubscription.current_period_start * 1000).toISOString(),
-            current_period_end: subscriptionEnd,
+        if (subscriptions.data.length > 0) {
+          const stripeSubscription = subscriptions.data[0];
+          const subscriptionEnd = new Date(stripeSubscription.current_period_end * 1000).toISOString();
+          
+          // Determine plan from price
+          const priceId = stripeSubscription.items.data[0].price.id;
+          const price = await stripe.prices.retrieve(priceId);
+          const amount = price.unit_amount || 0;
+          
+          let plan = 'basic';
+          if (amount >= 2000) plan = 'enterprise'; // $20+
+          else if (amount >= 1500) plan = 'premium'; // $15+
+          
+          logStep("Found active Stripe subscription", { 
+            subscriptionId: stripeSubscription.id, 
+            plan, 
+            endDate: subscriptionEnd 
           });
 
-        return new Response(JSON.stringify({
-          subscribed: true,
-          plan: plan,
-          subscription_end: subscriptionEnd,
-          payment_method: 'stripe'
-        }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200,
-        });
+          // Update our database
+          await supabaseClient
+            .from('subscriptions')
+            .upsert({
+              clinic_id: profile.clinic_id,
+              plan: plan,
+              status: 'approved',
+              amount_iqd: plan === 'basic' ? 10000 : plan === 'premium' ? 20000 : 30000,
+              amount_usd: amount / 100,
+              payment_method: 'stripe',
+              stripe_subscription_id: stripeSubscription.id,
+              stripe_customer_id: customerId,
+              current_period_start: new Date(stripeSubscription.current_period_start * 1000).toISOString(),
+              current_period_end: subscriptionEnd,
+            });
+
+          return new Response(JSON.stringify({
+            subscribed: true,
+            plan: plan,
+            subscription_end: subscriptionEnd,
+            payment_method: 'stripe'
+          }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 200,
+          });
+        }
+      }
+    } catch (stripeError: any) {
+      // Handle Stripe rate limiting and other errors gracefully
+      const stripeErrorMessage = stripeError.message || String(stripeError);
+      logStep("Stripe API error (non-fatal)", { message: stripeErrorMessage });
+      
+      // For rate limiting, return without active subscription but don't fail completely
+      if (stripeErrorMessage.includes('rate limit')) {
+        logStep("Rate limit hit, skipping Stripe check");
+        // Fall through to return no subscription
+      } else {
+        // For other Stripe errors, log but continue
+        logStep("Other Stripe error, continuing", { error: stripeErrorMessage });
       }
     }
 

@@ -75,13 +75,36 @@ export default function Subscription() {
   ];
 
   const checkSubscriptionStatus = async () => {
-    if (!user) return;
+    if (!user || checkingStatus) return; // Prevent multiple simultaneous calls
     
     setCheckingStatus(true);
     try {
       const { data, error } = await supabase.functions.invoke('check-subscription');
       
-      if (error) throw error;
+      if (error) {
+        console.error('Check subscription error:', error);
+        
+        // Handle specific Stripe errors
+        if (error.message?.includes('rate limit')) {
+          toast({
+            title: "يرجى الانتظار",
+            description: "الكثير من الطلبات، يرجى المحاولة بعد قليل",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        if (error.message?.includes('business name')) {
+          toast({
+            title: "خطأ في إعداد Stripe",
+            description: "يرجى إعداد اسم الشركة في حساب Stripe أولاً",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        throw error;
+      }
       
       setSubscription(data);
       console.log('Subscription status:', data);
@@ -98,11 +121,24 @@ export default function Subscription() {
   };
 
   useEffect(() => {
-    checkSubscriptionStatus();
+    if (!user) return;
     
-    // Auto-refresh every 30 seconds
-    const interval = setInterval(checkSubscriptionStatus, 30000);
-    return () => clearInterval(interval);
+    // Initial check with a small delay to prevent rapid calls
+    const timer = setTimeout(() => {
+      checkSubscriptionStatus();
+    }, 500);
+    
+    // Auto-refresh every 60 seconds (reduced frequency to avoid rate limits)
+    const interval = setInterval(() => {
+      if (!checkingStatus) { // Only check if not already checking
+        checkSubscriptionStatus();
+      }
+    }, 60000);
+    
+    return () => {
+      clearTimeout(timer);
+      clearInterval(interval);
+    };
   }, [user]);
 
   const handleStripeSubscription = async (plan: string) => {
@@ -121,17 +157,53 @@ export default function Subscription() {
         body: { plan }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Create subscription error:', error);
+        
+        // Handle specific Stripe errors
+        if (error.message?.includes('business name')) {
+          toast({
+            title: "مطلوب إعداد حساب Stripe",
+            description: "يرجى إعداد اسم الشركة أو الأعمال في حساب Stripe الخاص بك لاستكمال العملية",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        if (error.message?.includes('rate limit')) {
+          toast({
+            title: "يرجى الانتظار",
+            description: "الكثير من الطلبات، يرجى المحاولة بعد دقيقة",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        throw error;
+      }
 
-      if (data.url) {
+      if (data?.url) {
         // Open Stripe checkout in a new tab
         window.open(data.url, '_blank');
+        
+        toast({
+          title: "تم فتح صفحة الدفع",
+          description: "تم فتح صفحة الدفع في نافذة جديدة، يرجى إكمال عملية الدفع",
+        });
+      } else {
+        throw new Error("لم يتم الحصول على رابط الدفع");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating subscription:', error);
+      
+      let errorMessage = "حدث خطأ أثناء إنشاء الاشتراك";
+      if (error.message) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "خطأ في إنشاء الاشتراك",
-        description: "حدث خطأ أثناء إنشاء الاشتراك",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
