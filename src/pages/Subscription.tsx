@@ -6,13 +6,14 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { CreditCard, Upload, Clock, CheckCircle, XCircle, RefreshCw } from "lucide-react";
+import { CreditCard, Upload, Clock, CheckCircle, XCircle, RefreshCw, Crown } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FibPaymentDialog } from "@/components/billing/FibPaymentDialog";
+import { useSubscription } from "@/hooks/useSubscription";
 
 interface SubscriptionData {
   subscribed: boolean;
@@ -24,9 +25,8 @@ interface SubscriptionData {
 export default function Subscription() {
   const { user, profile } = useAuth();
   const { toast } = useToast();
-  const [subscription, setSubscription] = useState<SubscriptionData | null>(null);
+  const { subscription: userSubscription, loading: subscriptionLoading, refetch } = useSubscription();
   const [loading, setLoading] = useState(false);
-  const [checkingStatus, setCheckingStatus] = useState(false);
 
   const plans = [
     {
@@ -96,84 +96,27 @@ export default function Subscription() {
     }
   ];
 
-  const checkSubscriptionStatus = async () => {
-    if (!user || checkingStatus) return;
-    
-    setCheckingStatus(true);
-    try {
-      // Check if user has clinic_id, if not, they don't have a subscription
-      if (!profile?.clinic_id) {
-        setSubscription({
-          subscribed: false,
-          plan: null,
-          subscription_end: null,
-          payment_method: null
-        });
-        setCheckingStatus(false);
-        return;
-      }
-
-      // Check subscription status from database directly (no Stripe needed)
-      const { data: subData, error } = await supabase
-        .from('subscriptions')
-        .select('*')
-        .eq('clinic_id', profile.clinic_id)
-        .eq('status', 'approved')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (error && error.code !== 'PGRST116') {
-        throw error;
-      }
-
-      if (subData) {
-        setSubscription({
-          subscribed: true,
-          plan: subData.plan,
-          subscription_end: subData.current_period_end,
-          payment_method: subData.payment_method
-        });
-      } else {
-        setSubscription({
-          subscribed: false,
-          plan: null,
-          subscription_end: null,
-          payment_method: null
-        });
-      }
-    } catch (error) {
-      console.error('Error checking subscription:', error);
-      toast({
-        title: "خطأ في التحقق من الاشتراك",
-        description: "حدث خطأ أثناء التحقق من حالة الاشتراك",
-        variant: "destructive",
-      });
-    } finally {
-      setCheckingStatus(false);
-    }
+  const getPlanDisplayName = (plan: string) => {
+    const planNames = {
+      basic: 'أساسي',
+      premium: 'احترافي', 
+      enterprise: 'مؤسسي'
+    };
+    return planNames[plan as keyof typeof planNames] || plan;
   };
 
-  useEffect(() => {
-    if (!user || !profile) return;
-    
-    // Initial check with a small delay to prevent rapid calls
-    const timer = setTimeout(() => {
-      checkSubscriptionStatus();
-    }, 500);
-    
-    // Auto-refresh every 60 seconds (reduced frequency to avoid rate limits)
-    const interval = setInterval(() => {
-      if (!checkingStatus) { // Only check if not already checking
-        checkSubscriptionStatus();
-      }
-    }, 60000);
-    
-    return () => {
-      clearTimeout(timer);
-      clearInterval(interval);
+  const getUpgradePrice = (currentPlan: string, targetPlan: string) => {
+    const prices = {
+      basic: 10000,
+      premium: 20000,
+      enterprise: 30000
     };
-  }, [user, profile]);
+    
+    const currentPrice = prices[currentPlan as keyof typeof prices] || 0;
+    const targetPrice = prices[targetPlan as keyof typeof prices] || 0;
+    
+    return Math.max(0, targetPrice - currentPrice);
+  };
 
   const handleStripeSubscription = async (plan: string) => {
     if (!user) {
@@ -268,12 +211,12 @@ export default function Subscription() {
   };
 
   const getStatusBadge = () => {
-    if (!subscription) return null;
+    if (!userSubscription) return <Badge variant="outline">غير مفعل</Badge>;
     
-    if (subscription.subscribed) {
-      return <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">نشط</Badge>;
-    }
-    return <Badge variant="outline">غير مفعل</Badge>;
+    return <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+      <Crown className="h-3 w-3 ml-1" />
+      نشط
+    </Badge>;
   };
 
   // Show message for users without clinic_id
@@ -369,10 +312,10 @@ export default function Subscription() {
           <div className="flex gap-2">
             <Button
               variant="outline"
-              onClick={checkSubscriptionStatus}
-              disabled={checkingStatus}
+              onClick={refetch}
+              disabled={subscriptionLoading}
             >
-              <RefreshCw className={`h-4 w-4 ml-2 ${checkingStatus ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`h-4 w-4 ml-2 ${subscriptionLoading ? 'animate-spin' : ''}`} />
               تحديث الحالة
             </Button>
             {getStatusBadge()}
@@ -380,93 +323,156 @@ export default function Subscription() {
         </div>
 
         {/* Current Subscription Status */}
-        {subscription && (
-          <Card>
+        {userSubscription && (
+          <Card className="border-2 border-primary/20 bg-gradient-to-r from-primary/5 to-transparent">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-green-600" />
-                حالة الاشتراك الحالي
+                <Crown className="h-5 w-5 text-primary" />
+                اشتراكك النشط
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {subscription.subscribed ? (
-                <div className="space-y-2">
-                  <p><strong>الخطة:</strong> {subscription.plan === 'basic' ? 'أساسي' : subscription.plan === 'premium' ? 'متميز' : 'مؤسسي'}</p>
-                  <p><strong>طريقة الدفع:</strong> {
-                    subscription.payment_method === 'stripe' ? 'بطاقة ائتمان' :
-                    subscription.payment_method === 'qi_card' ? 'كي كارد' :
-                    subscription.payment_method === 'zain_cash' ? 'زين كاش' : 
-                    subscription.payment_method
-                  }</p>
-                  {subscription.subscription_end && (
-                    <p><strong>تاريخ انتهاء الاشتراك:</strong> {new Date(subscription.subscription_end).toLocaleDateString('ar-IQ')}</p>
-                  )}
-                  {subscription.payment_method === 'stripe' && (
-                    <Button onClick={handleManageSubscription} disabled={loading} className="mt-4">
-                      <CreditCard className="h-4 w-4 ml-2" />
-                      إدارة الاشتراك
-                    </Button>
-                  )}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">الخطة الحالية</p>
+                  <p className="font-semibold text-lg">{getPlanDisplayName(userSubscription.plan)}</p>
                 </div>
-              ) : (
-                <p className="text-muted-foreground">لا يوجد اشتراك نشط حالياً</p>
-              )}
+                
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">المبلغ المدفوع</p>
+                  <p className="font-semibold text-lg">{userSubscription.amount_iqd.toLocaleString()} د.ع</p>
+                </div>
+                
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">طريقة الدفع</p>
+                  <p className="font-medium">{
+                    userSubscription.payment_method === 'stripe' ? 'بطاقة ائتمان' :
+                    userSubscription.payment_method === 'qi_card' ? 'كي كارد' :
+                    userSubscription.payment_method === 'zain_cash' ? 'زين كاش' :
+                    userSubscription.payment_method === 'bank_transfer' ? 'تحويل بنكي' :
+                    userSubscription.payment_method
+                  }</p>
+                </div>
+                
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">تاريخ الانتهاء</p>
+                  <p className="font-medium">
+                    {userSubscription.current_period_end ? 
+                      new Date(userSubscription.current_period_end).toLocaleDateString('ar-IQ') : 
+                      'غير محدد'
+                    }
+                  </p>
+                </div>
+              </div>
+              
+              <div className="mt-4 pt-4 border-t">
+                <p className="text-sm text-muted-foreground mb-2">
+                  تاريخ بداية الاشتراك: {new Date(userSubscription.created_at).toLocaleDateString('ar-IQ')}
+                </p>
+                
+                {userSubscription.payment_method === 'stripe' && (
+                  <Button onClick={handleManageSubscription} disabled={loading} variant="outline">
+                    <CreditCard className="h-4 w-4 ml-2" />
+                    إدارة الاشتراك عبر Stripe
+                  </Button>
+                )}
+              </div>
             </CardContent>
           </Card>
         )}
 
         {/* Subscription Plans */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {plans.map((plan) => (
-            <Card key={plan.id} className={`relative ${subscription?.plan === plan.id ? 'ring-2 ring-primary' : ''}`}>
-              {subscription?.plan === plan.id && (
-                <Badge className="absolute -top-2 right-4 bg-primary">
-                  الخطة الحالية
-                </Badge>
-              )}
-              <CardHeader>
-                <CardTitle className="text-center">{plan.name}</CardTitle>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-primary">{plan.price}</div>
-                  <div className="text-sm text-muted-foreground">{plan.usdPrice} شهرياً</div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2 mb-6">
-                  {plan.features.map((feature, index) => (
-                    <li key={index} className="flex items-center gap-2">
-                      <CheckCircle className="h-4 w-4 text-green-600" />
-                      <span className="text-sm">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
+          {plans.map((plan) => {
+            const isCurrentPlan = userSubscription?.plan === plan.id;
+            const canUpgrade = userSubscription && !isCurrentPlan && 
+              (plans.findIndex(p => p.id === userSubscription.plan) < plans.findIndex(p => p.id === plan.id));
+            const upgradePrice = userSubscription ? getUpgradePrice(userSubscription.plan, plan.id) : 0;
+            
+            return (
+              <Card key={plan.id} className={`relative ${isCurrentPlan ? 'ring-2 ring-primary border-primary/50' : ''}`}>
+                {isCurrentPlan && (
+                  <Badge className="absolute -top-2 right-4 bg-primary">
+                    <Crown className="h-3 w-3 ml-1" />
+                    خطتك الحالية
+                  </Badge>
+                )}
+                {plan.badge && !isCurrentPlan && (
+                  <Badge className="absolute -top-2 right-4 bg-orange-500">
+                    {plan.badge}
+                  </Badge>
+                )}
                 
-                <div className="space-y-2">
-                  {/* FIB Credit Card Payment */}
-                  <FibPaymentDialog 
-                    planId={plan.id} 
-                    planName={plan.name} 
-                    price={parseInt(plan.price.replace(/[^\d]/g, ''))} 
-                  />
-                  
-                  {/* Local Payment Method */}
-                  <ManualPaymentDialog planId={plan.id} planName={plan.name} price={plan.price} />
-                  
-                  <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-center">
-                    <p className="text-sm text-blue-700 dark:text-blue-300 font-medium mb-2">
-                      طرق الدفع المتاحة:
-                    </p>
-                    <div className="text-xs text-blue-600 dark:text-blue-400 space-y-1">
-                      <p>🏛️ بنك العراق الأول (FIB)</p>
-                      <p>🟢 كي كارد (Qi Card)</p>
-                      <p>🟡 زين كاش (Zain Cash)</p>
-                      <p>🏦 تحويل بنكي مباشر</p>
-                    </div>
+                <CardHeader>
+                  <CardTitle className="text-center">{plan.name}</CardTitle>
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-primary">{plan.price}</div>
+                    <div className="text-sm text-muted-foreground">{plan.usdPrice} شهرياً</div>
+                    {canUpgrade && upgradePrice > 0 && (
+                      <div className="text-sm text-orange-600 font-medium mt-1">
+                        ترقية بـ {upgradePrice.toLocaleString()} د.ع فقط
+                      </div>
+                    )}
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardHeader>
+                
+                <CardContent>
+                  <ul className="space-y-2 mb-6">
+                    {plan.features.map((feature, index) => (
+                      <li key={index} className="flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <span className="text-sm">{feature}</span>
+                      </li>
+                    ))}
+                    {plan.notIncluded.map((feature, index) => (
+                      <li key={`not-${index}`} className="flex items-center gap-2 opacity-50">
+                        <XCircle className="h-4 w-4 text-gray-400" />
+                        <span className="text-sm line-through">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  
+                  {isCurrentPlan ? (
+                    <div className="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                      <p className="text-green-700 dark:text-green-300 font-medium">
+                        هذه خطتك الحالية
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {/* FIB Credit Card Payment */}
+                      <FibPaymentDialog 
+                        planId={plan.id} 
+                        planName={plan.name} 
+                        price={canUpgrade ? upgradePrice : parseInt(plan.price.replace(/[^\d]/g, ''))}
+                        isUpgrade={canUpgrade}
+                      />
+                      
+                      {/* Local Payment Method */}
+                      <ManualPaymentDialog 
+                        planId={plan.id} 
+                        planName={plan.name} 
+                        price={canUpgrade ? `${upgradePrice.toLocaleString()} د.ع` : plan.price}
+                        isUpgrade={canUpgrade}
+                      />
+                      
+                      <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-center">
+                        <p className="text-sm text-blue-700 dark:text-blue-300 font-medium mb-2">
+                          طرق الدفع المتاحة:
+                        </p>
+                        <div className="text-xs text-blue-600 dark:text-blue-400 space-y-1">
+                          <p>🏛️ بنك العراق الأول (FIB)</p>
+                          <p>🟢 كي كارد (Qi Card)</p>
+                          <p>🟡 زين كاش (Zain Cash)</p>
+                          <p>🏦 تحويل بنكي مباشر</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       </div>
     </DashboardLayout>
@@ -474,7 +480,7 @@ export default function Subscription() {
 }
 
 // Manual Payment Dialog Component
-function ManualPaymentDialog({ planId, planName, price }: { planId: string, planName: string, price: string }) {
+function ManualPaymentDialog({ planId, planName, price, isUpgrade }: { planId: string, planName: string, price: string, isUpgrade?: boolean }) {
   const [open, setOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'qi_card' | 'zain_cash' | 'bank_transfer'>('qi_card');
   const [senderName, setSenderName] = useState('');

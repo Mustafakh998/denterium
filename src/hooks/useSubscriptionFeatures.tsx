@@ -34,13 +34,35 @@ export const useSubscriptionFeatures = () => {
   useEffect(() => {
     const fetchFeatures = async () => {
       try {
-        // Get user's subscription plan from subscriptions table
-        const { data: subscription } = await supabase
-          .from('subscriptions')
-          .select('plan, status')
-          .eq('clinic_id', profile?.clinic_id)
-          .eq('status', 'approved')
-          .maybeSingle();
+        let subscription = null;
+        
+        // If user has clinic_id, check subscription by clinic_id
+        if (profile?.clinic_id) {
+          const { data: clinicSub } = await supabase
+            .from('subscriptions')
+            .select('plan, status')
+            .eq('clinic_id', profile.clinic_id)
+            .eq('status', 'approved')
+            .maybeSingle();
+          subscription = clinicSub;
+        } else {
+          // If no clinic_id, check by user profile (for users who subscribed but haven't created clinic yet)
+          const { data: userSub } = await supabase
+            .from('subscriptions')
+            .select('plan, status')
+            .is('clinic_id', null)
+            .eq('status', 'approved')
+            .maybeSingle();
+          
+          // Also check manual payments
+          const { data: manualPayment } = await supabase
+            .from('manual_payments')
+            .select('*')
+            .eq('status', 'approved')
+            .maybeSingle();
+            
+          subscription = userSub || (manualPayment ? { plan: 'basic', status: 'approved' } : null);
+        }
 
         const userPlan = subscription?.plan || 'basic';
         setSubscriptionPlan(userPlan);

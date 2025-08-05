@@ -32,21 +32,23 @@ const CreateClinic = () => {
       if (!user) return;
 
       try {
-        // Check if user has an approved subscription
+        // Check if user has an approved subscription without clinic_id
         const { data: subscription } = await supabase
           .from('subscriptions')
           .select('*')
-          .eq('clinic_id', null) // For users without clinic yet
+          .is('clinic_id', null)
           .eq('status', 'approved')
           .maybeSingle();
 
-        // Also check manual payments for approved subscriptions
+        // Also check manual payments for approved subscriptions without clinic_id
         const { data: manualPayment } = await supabase
           .from('manual_payments')
           .select('*')
+          .is('clinic_id', null)
           .eq('status', 'approved')
           .maybeSingle();
 
+        console.log('Subscription check:', { subscription, manualPayment });
         setHasApprovedSubscription(!!(subscription || manualPayment));
       } catch (error) {
         console.error('Error checking subscription:', error);

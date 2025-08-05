@@ -16,9 +16,10 @@ interface FibPaymentDialogProps {
   planId: string;
   planName: string;
   price: number;
+  isUpgrade?: boolean;
 }
 
-export function FibPaymentDialog({ planId, planName, price }: FibPaymentDialogProps) {
+export function FibPaymentDialog({ planId, planName, price, isUpgrade }: FibPaymentDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [paymentData, setPaymentData] = useState<any>(null);
   const [isOpen, setIsOpen] = useState(false);
