@@ -62,7 +62,10 @@ export default function MedicalImages() {
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
 
   const fetchImages = async () => {
-    if (!profile?.clinic_id) return;
+    if (!profile?.clinic_id) {
+      setLoading(false);
+      return;
+    }
     
     setLoading(true);
     try {
@@ -193,6 +196,25 @@ export default function MedicalImages() {
     const now = new Date();
     return imageDate.getMonth() === now.getMonth() && imageDate.getFullYear() === now.getFullYear();
   }).length;
+
+  // Show no clinic setup message if user has no clinic_id
+  if (!loading && !profile?.clinic_id) {
+    return (
+      <DashboardLayout>
+        <div className="flex flex-col items-center justify-center h-64 space-y-4">
+          <ImageIcon className="h-16 w-16 text-gray-400" />
+          <div className="text-center">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+              لم يتم ربط حسابك بعيادة
+            </h3>
+            <p className="text-gray-500 dark:text-gray-400 mt-2">
+              يرجى التواصل مع مدير النظام لربط حسابك بعيادة لتتمكن من الوصول إلى هذه الميزة
+            </p>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   if (loading) {
     return (
