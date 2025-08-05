@@ -245,7 +245,7 @@ export default function Suppliers() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Button onClick={() => window.location.href = '/supplier-register'}>
+          <Button onClick={() => window.location.href = '/auth'}>
             Register as Supplier
           </Button>
         </CardContent>

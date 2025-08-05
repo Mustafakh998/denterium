@@ -23,7 +23,6 @@ import Communication from "./pages/Communication";
 import Inventory from "./pages/Inventory";
 import Backup from "./pages/Backup";
 import Training from "./pages/Training";
-import SupplierRegister from "./pages/SupplierRegister";
 import SupplierDashboard from "./pages/SupplierDashboard";
 import Suppliers from "./pages/Suppliers";
 import InventoryManagement from "./components/supplier/InventoryManagement";
@@ -60,7 +59,6 @@ const App = () => (
             <Route path="/inventory" element={<Inventory />} />
             <Route path="/backup" element={<Backup />} />
             <Route path="/training" element={<Training />} />
-          <Route path="/supplier-register" element={<SupplierRegister />} />
           <Route path="/supplier-dashboard" element={<SupplierDashboard />} />
           <Route path="/supplier-inventory" element={<InventoryManagement />} />
           <Route path="/supplier-payments" element={<PendingPayments />} />

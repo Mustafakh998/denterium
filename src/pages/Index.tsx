@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -11,12 +11,38 @@ import AddPatientForm from "@/components/patients/AddPatientForm";
 import AddAppointmentForm from "@/components/appointments/AddAppointmentForm";
 import AddInvoiceForm from "@/components/billing/AddInvoiceForm";
 import { User, Calendar, FileText, Activity } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Index() {
   const { user, profile, loading } = useAuth();
   const [addPatientOpen, setAddPatientOpen] = useState(false);
   const [addAppointmentOpen, setAddAppointmentOpen] = useState(false);
   const [addInvoiceOpen, setAddInvoiceOpen] = useState(false);
+  const [isSupplier, setIsSupplier] = useState<boolean | null>(null);
+
+  // Check if user is a supplier
+  useEffect(() => {
+    const checkSupplierStatus = async () => {
+      if (user && !profile) {
+        try {
+          const { data } = await supabase
+            .from('suppliers')
+            .select('id')
+            .eq('user_id', user.id)
+            .maybeSingle();
+          
+          setIsSupplier(!!data);
+        } catch (error) {
+          console.error('Error checking supplier status:', error);
+          setIsSupplier(false);
+        }
+      } else {
+        setIsSupplier(false);
+      }
+    };
+
+    checkSupplierStatus();
+  }, [user, profile]);
 
   if (loading) {
     return (
@@ -31,7 +57,7 @@ export default function Index() {
   }
 
   // Redirect suppliers to their dashboard
-  if (profile?.role === 'supplier') {
+  if (profile?.role === 'supplier' || isSupplier) {
     return <Navigate to="/supplier-dashboard" replace />;
   }
 

@@ -105,7 +105,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
@@ -116,6 +116,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           description: error.message,
           variant: "destructive",
         });
+        return { error };
+      }
+
+      // Check if user is a supplier and redirect accordingly
+      if (data.user) {
+        const { data: supplierData } = await supabase
+          .from('suppliers')
+          .select('id')
+          .eq('user_id', data.user.id)
+          .maybeSingle();
+
+        if (supplierData) {
+          // User is a supplier, redirect to supplier dashboard
+          window.location.href = '/supplier-dashboard';
+          return { error: null };
+        }
       }
       
       return { error };
