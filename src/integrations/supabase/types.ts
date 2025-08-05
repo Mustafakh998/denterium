@@ -443,6 +443,137 @@ export type Database = {
           },
         ]
       }
+      product_categories: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          parent_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          parent_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          parent_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_categories_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "product_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          barcode: string | null
+          brand: string | null
+          bulk_price: number | null
+          bulk_quantity: number | null
+          category_id: string | null
+          created_at: string | null
+          currency: string | null
+          description: string | null
+          expiry_date: string | null
+          id: string
+          images: string[] | null
+          is_active: boolean | null
+          manufacture_date: string | null
+          max_stock_level: number | null
+          min_stock_level: number | null
+          model: string | null
+          name: string
+          requires_prescription: boolean | null
+          sku: string | null
+          specifications: Json | null
+          stock_quantity: number | null
+          supplier_id: string | null
+          unit_price: number
+          updated_at: string | null
+          warranty_months: number | null
+        }
+        Insert: {
+          barcode?: string | null
+          brand?: string | null
+          bulk_price?: number | null
+          bulk_quantity?: number | null
+          category_id?: string | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          expiry_date?: string | null
+          id?: string
+          images?: string[] | null
+          is_active?: boolean | null
+          manufacture_date?: string | null
+          max_stock_level?: number | null
+          min_stock_level?: number | null
+          model?: string | null
+          name: string
+          requires_prescription?: boolean | null
+          sku?: string | null
+          specifications?: Json | null
+          stock_quantity?: number | null
+          supplier_id?: string | null
+          unit_price: number
+          updated_at?: string | null
+          warranty_months?: number | null
+        }
+        Update: {
+          barcode?: string | null
+          brand?: string | null
+          bulk_price?: number | null
+          bulk_quantity?: number | null
+          category_id?: string | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          expiry_date?: string | null
+          id?: string
+          images?: string[] | null
+          is_active?: boolean | null
+          manufacture_date?: string | null
+          max_stock_level?: number | null
+          min_stock_level?: number | null
+          model?: string | null
+          name?: string
+          requires_prescription?: boolean | null
+          sku?: string | null
+          specifications?: Json | null
+          stock_quantity?: number | null
+          supplier_id?: string | null
+          unit_price?: number
+          updated_at?: string | null
+          warranty_months?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "product_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -583,6 +714,328 @@ export type Database = {
           },
         ]
       }
+      supplier_messages: {
+        Row: {
+          created_at: string | null
+          dentist_id: string | null
+          id: string
+          is_read: boolean | null
+          message_text: string
+          order_id: string | null
+          product_id: string | null
+          sender_type: string | null
+          supplier_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          dentist_id?: string | null
+          id?: string
+          is_read?: boolean | null
+          message_text: string
+          order_id?: string | null
+          product_id?: string | null
+          sender_type?: string | null
+          supplier_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          dentist_id?: string | null
+          id?: string
+          is_read?: boolean | null
+          message_text?: string
+          order_id?: string | null
+          product_id?: string | null
+          sender_type?: string | null
+          supplier_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_messages_dentist_id_fkey"
+            columns: ["dentist_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_messages_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "supplier_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_messages_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_messages_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      supplier_order_items: {
+        Row: {
+          created_at: string | null
+          id: string
+          order_id: string | null
+          product_id: string | null
+          quantity: number
+          total_price: number
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          order_id?: string | null
+          product_id?: string | null
+          quantity: number
+          total_price: number
+          unit_price: number
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          order_id?: string | null
+          product_id?: string | null
+          quantity?: number
+          total_price?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "supplier_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      supplier_orders: {
+        Row: {
+          billing_address: string | null
+          clinic_id: string | null
+          created_at: string | null
+          delivered_at: string | null
+          dentist_id: string | null
+          discount_amount: number | null
+          expected_delivery_date: string | null
+          id: string
+          notes: string | null
+          order_number: string | null
+          payment_method: string | null
+          payment_status: string | null
+          shipping_address: string | null
+          shipping_amount: number | null
+          status: string | null
+          supplier_id: string | null
+          tax_amount: number | null
+          total_amount: number
+          updated_at: string | null
+        }
+        Insert: {
+          billing_address?: string | null
+          clinic_id?: string | null
+          created_at?: string | null
+          delivered_at?: string | null
+          dentist_id?: string | null
+          discount_amount?: number | null
+          expected_delivery_date?: string | null
+          id?: string
+          notes?: string | null
+          order_number?: string | null
+          payment_method?: string | null
+          payment_status?: string | null
+          shipping_address?: string | null
+          shipping_amount?: number | null
+          status?: string | null
+          supplier_id?: string | null
+          tax_amount?: number | null
+          total_amount: number
+          updated_at?: string | null
+        }
+        Update: {
+          billing_address?: string | null
+          clinic_id?: string | null
+          created_at?: string | null
+          delivered_at?: string | null
+          dentist_id?: string | null
+          discount_amount?: number | null
+          expected_delivery_date?: string | null
+          id?: string
+          notes?: string | null
+          order_number?: string | null
+          payment_method?: string | null
+          payment_status?: string | null
+          shipping_address?: string | null
+          shipping_amount?: number | null
+          status?: string | null
+          supplier_id?: string | null
+          tax_amount?: number | null
+          total_amount?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_orders_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_orders_dentist_id_fkey"
+            columns: ["dentist_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_orders_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      supplier_reviews: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_verified: boolean | null
+          order_id: string | null
+          rating: number | null
+          review_text: string | null
+          reviewer_id: string | null
+          supplier_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_verified?: boolean | null
+          order_id?: string | null
+          rating?: number | null
+          review_text?: string | null
+          reviewer_id?: string | null
+          supplier_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_verified?: boolean | null
+          order_id?: string | null
+          rating?: number | null
+          review_text?: string | null
+          reviewer_id?: string | null
+          supplier_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_reviews_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "supplier_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_reviews_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      suppliers: {
+        Row: {
+          address: string | null
+          business_license: string | null
+          city: string | null
+          company_name: string
+          country: string | null
+          created_at: string | null
+          description: string | null
+          email: string | null
+          id: string
+          is_active: boolean | null
+          logo_url: string | null
+          phone: string | null
+          rating: number | null
+          tax_id: string | null
+          total_reviews: number | null
+          updated_at: string | null
+          user_id: string | null
+          verified: boolean | null
+          website: string | null
+        }
+        Insert: {
+          address?: string | null
+          business_license?: string | null
+          city?: string | null
+          company_name: string
+          country?: string | null
+          created_at?: string | null
+          description?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          logo_url?: string | null
+          phone?: string | null
+          rating?: number | null
+          tax_id?: string | null
+          total_reviews?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+          verified?: boolean | null
+          website?: string | null
+        }
+        Update: {
+          address?: string | null
+          business_license?: string | null
+          city?: string | null
+          company_name?: string
+          country?: string | null
+          created_at?: string | null
+          description?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          logo_url?: string | null
+          phone?: string | null
+          rating?: number | null
+          tax_id?: string | null
+          total_reviews?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+          verified?: boolean | null
+          website?: string | null
+        }
+        Relationships: []
+      }
       treatments: {
         Row: {
           appointment_id: string | null
@@ -692,7 +1145,13 @@ export type Database = {
       payment_status: "pending" | "approved" | "rejected" | "expired"
       subscription_plan: "basic" | "premium" | "enterprise"
       system_role: "super_admin" | "support" | "user"
-      user_role: "admin" | "dentist" | "assistant" | "receptionist" | "patient"
+      user_role:
+        | "admin"
+        | "dentist"
+        | "assistant"
+        | "receptionist"
+        | "patient"
+        | "supplier"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -830,7 +1289,14 @@ export const Constants = {
       payment_status: ["pending", "approved", "rejected", "expired"],
       subscription_plan: ["basic", "premium", "enterprise"],
       system_role: ["super_admin", "support", "user"],
-      user_role: ["admin", "dentist", "assistant", "receptionist", "patient"],
+      user_role: [
+        "admin",
+        "dentist",
+        "assistant",
+        "receptionist",
+        "patient",
+        "supplier",
+      ],
     },
   },
 } as const

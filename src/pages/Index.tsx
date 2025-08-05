@@ -30,6 +30,11 @@ export default function Index() {
     return <Navigate to="/auth" replace />;
   }
 
+  // Redirect suppliers to their dashboard
+  if (profile?.role === 'supplier') {
+    return <Navigate to="/supplier-dashboard" replace />;
+  }
+
   return (
     <DashboardLayout>
       <div className="space-y-6">

@@ -53,6 +53,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { icon: UserCheck, label: "الموظفين", href: "/staff" },
     { icon: TrendingUp, label: "التقارير", href: "/reports" },
     { icon: Heart, label: "التواصل", href: "/communication" },
+    { icon: ShieldCheck, label: "الموردين", href: "/suppliers" },
     { icon: CreditCard, label: "الاشتراك", href: "/subscription" },
     ...(profile?.role === 'admin' ? [
       { icon: ShieldCheck, label: "إدارة المدفوعات", href: "/admin/payments" }
@@ -82,6 +83,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                  profile?.role === 'assistant' ? 'مساعد' :
                  profile?.role === 'receptionist' ? 'موظف استقبال' :
                  profile?.role === 'admin' ? 'مدير' :
+                 profile?.role === 'supplier' ? 'مورد' :
                  profile?.role || "جاري التحميل..."}
               </Badge>
               
