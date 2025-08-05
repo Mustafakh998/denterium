@@ -457,6 +457,7 @@ export type Database = {
           phone: string | null
           role: Database["public"]["Enums"]["user_role"] | null
           specialization: string | null
+          system_role: Database["public"]["Enums"]["system_role"] | null
           updated_at: string | null
           user_id: string | null
         }
@@ -473,6 +474,7 @@ export type Database = {
           phone?: string | null
           role?: Database["public"]["Enums"]["user_role"] | null
           specialization?: string | null
+          system_role?: Database["public"]["Enums"]["system_role"] | null
           updated_at?: string | null
           user_id?: string | null
         }
@@ -489,6 +491,7 @@ export type Database = {
           phone?: string | null
           role?: Database["public"]["Enums"]["user_role"] | null
           specialization?: string | null
+          system_role?: Database["public"]["Enums"]["system_role"] | null
           updated_at?: string | null
           user_id?: string | null
         }
@@ -683,6 +686,7 @@ export type Database = {
       payment_method: "stripe" | "qi_card" | "zain_cash"
       payment_status: "pending" | "approved" | "rejected" | "expired"
       subscription_plan: "basic" | "premium" | "enterprise"
+      system_role: "super_admin" | "support" | "user"
       user_role: "admin" | "dentist" | "assistant" | "receptionist" | "patient"
     }
     CompositeTypes: {
@@ -814,6 +818,7 @@ export const Constants = {
       payment_method: ["stripe", "qi_card", "zain_cash"],
       payment_status: ["pending", "approved", "rejected", "expired"],
       subscription_plan: ["basic", "premium", "enterprise"],
+      system_role: ["super_admin", "support", "user"],
       user_role: ["admin", "dentist", "assistant", "receptionist", "patient"],
     },
   },
