@@ -216,6 +216,7 @@ export type Database = {
           subscription_id: string | null
           transaction_reference: string | null
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           amount_iqd: number
@@ -234,6 +235,7 @@ export type Database = {
           subscription_id?: string | null
           transaction_reference?: string | null
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           amount_iqd?: number
@@ -252,6 +254,7 @@ export type Database = {
           subscription_id?: string | null
           transaction_reference?: string | null
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: [
           {

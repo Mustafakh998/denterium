@@ -29,26 +29,31 @@ const CreateClinic = () => {
 
   useEffect(() => {
     const checkSubscriptionStatus = async () => {
-      if (!user) return;
+      if (!user || !profile) return;
 
       try {
-        // Check for approved subscriptions without clinic_id (new users)
+        // Check for approved subscriptions linked to this user via manual payments
         const { data: subscription } = await supabase
           .from('subscriptions')
-          .select('*')
-          .is('clinic_id', null)
+          .select('*, manual_payments!inner(user_id)')
+          .eq('manual_payments.user_id', profile.user_id)
           .eq('status', 'approved')
           .maybeSingle();
 
-        // Also check for approved manual payments without clinic_id
+        // Also check for approved manual payments directly  
         const { data: manualPayment } = await supabase
           .from('manual_payments')
           .select('*')
-          .is('clinic_id', null)
+          .eq('user_id', profile.user_id)
           .eq('status', 'approved')
           .maybeSingle();
 
-        console.log('Subscription check:', { subscription, manualPayment, hasSubscription: !!(subscription || manualPayment) });
+        console.log('Subscription check:', { 
+          subscription, 
+          manualPayment, 
+          hasSubscription: !!(subscription || manualPayment),
+          userId: profile.user_id 
+        });
         setHasApprovedSubscription(!!(subscription || manualPayment));
       } catch (error) {
         console.error('Error checking subscription:', error);
@@ -58,7 +63,7 @@ const CreateClinic = () => {
     };
 
     checkSubscriptionStatus();
-  }, [user]);
+  }, [user, profile]);
 
   // Redirect if user already has a clinic
   useEffect(() => {

@@ -39,32 +39,48 @@ export const useSubscription = () => {
           .maybeSingle();
         
         subscriptionData = data;
-      } else {
-        // Check if user has approved manual payment without clinic
-        const { data: manualPayment } = await supabase
-          .from('manual_payments')
-          .select('*')
-          .is('clinic_id', null)
+      } 
+      
+      if (!subscriptionData) {
+        // Check if user has approved subscription via manual payment
+        const { data: subscriptionViaPayment } = await supabase
+          .from('subscriptions')
+          .select('*, manual_payments!inner(user_id)')
+          .eq('manual_payments.user_id', profile.user_id)
           .eq('status', 'approved')
           .order('created_at', { ascending: false })
           .limit(1)
           .maybeSingle();
 
-        if (manualPayment) {
-          // Convert manual payment to subscription format
-          subscriptionData = {
-            id: manualPayment.id,
-            plan: manualPayment.amount_iqd >= 30000 ? 'enterprise' : 
-                  manualPayment.amount_iqd >= 20000 ? 'premium' : 'basic',
-            status: 'approved',
-            amount_iqd: manualPayment.amount_iqd,
-            amount_usd: Math.round(manualPayment.amount_iqd / 1316),
-            current_period_start: manualPayment.created_at,
-            current_period_end: null,
-            payment_method: manualPayment.payment_method,
-            created_at: manualPayment.created_at,
-            clinic_id: null
-          };
+        subscriptionData = subscriptionViaPayment;
+
+        // If still no subscription found, check manual payments directly
+        if (!subscriptionData) {
+          const { data: manualPayment } = await supabase
+            .from('manual_payments')
+            .select('*')
+            .eq('user_id', profile.user_id)
+            .eq('status', 'approved')
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (manualPayment) {
+            // Convert manual payment to subscription format
+            subscriptionData = {
+              id: manualPayment.id,
+              plan: manualPayment.amount_iqd >= 30000 ? 'enterprise' : 
+                    manualPayment.amount_iqd >= 20000 ? 'premium' : 'basic',
+              status: 'approved',
+              amount_iqd: manualPayment.amount_iqd,
+              amount_usd: Math.round(manualPayment.amount_iqd / 1316),
+              current_period_start: manualPayment.created_at,
+              current_period_end: null,
+              payment_method: manualPayment.payment_method,
+              created_at: manualPayment.created_at,
+              clinic_id: manualPayment.clinic_id
+            };
+          }
         }
       }
       

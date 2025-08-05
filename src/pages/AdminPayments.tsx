@@ -15,6 +15,7 @@ import { useQuery } from "@tanstack/react-query";
 interface ManualPayment {
   id: string;
   clinic_id: string | null;
+  user_id: string;
   payment_method: string;
   amount_iqd: number;
   screenshot_url: string;
@@ -26,7 +27,12 @@ interface ManualPayment {
   created_at: string;
   clinics: {
     name: string;
-  };
+  } | null;
+  profiles: {
+    first_name: string;
+    last_name: string;
+    email: string;
+  } | null;
 }
 
 export default function AdminPayments() {
@@ -48,17 +54,22 @@ export default function AdminPayments() {
           *,
           clinics (
             name
+          ),
+          profiles!manual_payments_user_id_fkey (
+            first_name,
+            last_name,
+            email
           )
         `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as ManualPayment[];
+      return data as any;
     },
     enabled: isAdmin
   });
 
-  const handleApprovePayment = async (paymentId: string, clinicId: string | null) => {
+  const handleApprovePayment = async (paymentId: string, userId: string, clinicId: string | null) => {
     setProcessing(true);
     try {
       // Get the payment details first
@@ -94,7 +105,7 @@ export default function AdminPayments() {
       const now = new Date();
       const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, now.getDate());
 
-      // Check if subscription already exists
+      // Check if subscription already exists for this user
       let existingSubscription = null;
       if (clinicId) {
         const { data } = await supabase
@@ -105,6 +116,16 @@ export default function AdminPayments() {
           .limit(1)
           .maybeSingle();
         existingSubscription = data;
+      } else {
+        // Check for subscriptions without clinic but with same user via manual payments
+        const { data: userSubscriptions } = await supabase
+          .from('subscriptions')
+          .select('*, manual_payments!inner(user_id)')
+          .eq('manual_payments.user_id', userId)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        existingSubscription = userSubscriptions;
       }
 
       if (existingSubscription) {
@@ -122,8 +143,8 @@ export default function AdminPayments() {
           })
           .eq('id', existingSubscription.id);
       } else {
-        // Create new subscription record
-        await supabase
+        // Create new subscription record linked via manual payment
+        const { data: newSubscription } = await supabase
           .from('subscriptions')
           .insert({
             clinic_id: clinicId,
@@ -134,7 +155,17 @@ export default function AdminPayments() {
             payment_method: payment.payment_method,
             current_period_start: now.toISOString(),
             current_period_end: nextMonth.toISOString()
-          });
+          })
+          .select()
+          .single();
+
+        // Link the manual payment to the subscription
+        if (newSubscription) {
+          await supabase
+            .from('manual_payments')
+            .update({ subscription_id: newSubscription.id })
+            .eq('id', paymentId);
+        }
       }
 
       toast({
@@ -283,7 +314,8 @@ export default function AdminPayments() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg">
-                    {payment.clinics?.name || 'عيادة غير محددة'}
+                    {payment.profiles?.first_name} {payment.profiles?.last_name}
+                    {payment.clinics?.name && ` - ${payment.clinics.name}`}
                   </CardTitle>
                   {getStatusBadge(payment.status)}
                 </div>
@@ -333,7 +365,7 @@ export default function AdminPayments() {
                     <>
                       <Button
                         size="sm"
-                        onClick={() => handleApprovePayment(payment.id, payment.clinic_id)}
+                        onClick={() => handleApprovePayment(payment.id, payment.user_id, payment.clinic_id)}
                         disabled={processing}
                       >
                         <CheckCircle className="h-4 w-4 ml-2" />

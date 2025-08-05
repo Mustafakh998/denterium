@@ -45,20 +45,20 @@ const SuperAdminSubscriptions = () => {
     try {
       setLoading(true);
       
-      // Fetch both subscriptions and manual payments
+      // Fetch subscriptions with linked manual payments to get user info
       const { data: subscriptionsData, error: subsError } = await supabase
         .from('subscriptions')
         .select(`
           *,
-          profiles!inner(first_name, last_name, email),
+          manual_payments(user_id, profiles!manual_payments_user_id_fkey(first_name, last_name, email)),
           clinics(name)
         `)
         .order('created_at', { ascending: false });
 
       if (subsError) throw subsError;
 
-      // Also fetch approved manual payments that don't have corresponding subscriptions
-      const { data: manualPayments, error: paymentsError } = await supabase
+      // Also fetch approved manual payments that don't have subscription records yet
+      const { data: orphanPayments, error: paymentsError } = await supabase
         .from('manual_payments')
         .select(`
           id,
@@ -67,16 +67,18 @@ const SuperAdminSubscriptions = () => {
           created_at,
           status,
           clinic_id,
-          profiles!inner(first_name, last_name, email),
+          user_id,
+          profiles!manual_payments_user_id_fkey(first_name, last_name, email),
           clinics(name)
         `)
         .eq('status', 'approved')
+        .is('subscription_id', null)
         .order('created_at', { ascending: false });
 
       if (paymentsError) throw paymentsError;
 
-      // Convert manual payments to subscription format and merge
-      const convertedPayments = manualPayments?.map(payment => ({
+      // Convert orphan manual payments to subscription format
+      const convertedPayments = orphanPayments?.map(payment => ({
         id: payment.id,
         plan: payment.amount_iqd >= 30000 ? 'enterprise' : payment.amount_iqd >= 20000 ? 'premium' : 'basic',
         status: 'approved',
@@ -85,20 +87,20 @@ const SuperAdminSubscriptions = () => {
         current_period_end: null,
         created_at: payment.created_at,
         clinic_id: payment.clinic_id,
-        profiles: payment.profiles,
+        profiles: payment.profiles ? [payment.profiles] : [],
         clinics: payment.clinics,
         isManualPayment: true
       })) || [];
 
-      // Filter out manual payments that already have subscription records
-      const subscriptionClinicIds = new Set(subscriptionsData?.map(s => s.clinic_id) || []);
-      const uniqueManualPayments = convertedPayments.filter(p => 
-        !subscriptionClinicIds.has(p.clinic_id)
-      );
+      // Format regular subscriptions to match expected structure
+      const formattedSubscriptions = subscriptionsData?.map(sub => ({
+        ...sub,
+        profiles: sub.manual_payments?.[0]?.profiles ? [sub.manual_payments[0].profiles] : []
+      })) || [];
 
       const allSubscriptions = [
-        ...(subscriptionsData || []),
-        ...uniqueManualPayments
+        ...formattedSubscriptions,
+        ...convertedPayments
       ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
       setSubscriptions(allSubscriptions as any);
