@@ -54,7 +54,7 @@ interface Invoice {
 }
 
 export default function Billing() {
-  const { user, profile } = useAuth();
+  const { user, profile, profileLoading } = useAuth();
   const { toast } = useToast();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [filteredInvoices, setFilteredInvoices] = useState<Invoice[]>([]);
@@ -67,6 +67,10 @@ export default function Billing() {
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
 
   const fetchInvoices = async () => {
+    if (profileLoading) {
+      return;
+    }
+    
     if (!profile?.clinic_id) {
       setLoading(false);
       return;
@@ -112,10 +116,10 @@ export default function Billing() {
   };
 
   useEffect(() => {
-    if (profile?.clinic_id) {
+    if (!profileLoading) {
       fetchInvoices();
     }
-  }, [profile?.clinic_id]);
+  }, [profile?.clinic_id, profileLoading]);
 
   const filterInvoices = () => {
     let filtered = invoices;
@@ -220,7 +224,7 @@ export default function Billing() {
     .reduce((sum, inv) => sum + calculateRemainingBalance(inv), 0);
 
   // Show no clinic setup message if user has no clinic_id
-  if (!loading && !profile?.clinic_id) {
+  if (!profileLoading && !loading && !profile?.clinic_id) {
     return (
       <DashboardLayout>
         <div className="flex flex-col items-center justify-center h-64 space-y-4">
@@ -238,7 +242,7 @@ export default function Billing() {
     );
   }
 
-  if (loading) {
+  if (loading || profileLoading) {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center min-h-96">

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,6 +35,7 @@ interface Appointment {
 }
 
 const Appointments = () => {
+  const { profile, profileLoading } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
@@ -42,8 +44,12 @@ const Appointments = () => {
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
 
   const { data: appointments = [], isLoading, refetch } = useQuery({
-    queryKey: ['appointments'],
+    queryKey: ['appointments', profile?.clinic_id],
     queryFn: async () => {
+      if (!profile?.clinic_id) {
+        throw new Error("No clinic ID");
+      }
+      
       const { data, error } = await supabase
         .from('appointments')
         .select(`
@@ -54,11 +60,13 @@ const Appointments = () => {
             phone
           )
         `)
+        .eq('clinic_id', profile.clinic_id)
         .order('appointment_date', { ascending: true });
 
       if (error) throw error;
       return data as Appointment[];
-    }
+    },
+    enabled: !!profile?.clinic_id && !profileLoading
   });
 
   const filteredAppointments = appointments.filter(appointment => {
@@ -96,7 +104,26 @@ const Appointments = () => {
     setIsDetailsDialogOpen(true);
   };
 
-  if (isLoading) {
+  // Show no clinic setup message if user has no clinic_id
+  if (!profileLoading && !profile?.clinic_id) {
+    return (
+      <DashboardLayout>
+        <div className="flex flex-col items-center justify-center h-64 space-y-4">
+          <CalendarIcon className="h-16 w-16 text-gray-400" />
+          <div className="text-center">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+              لم يتم ربط حسابك بعيادة
+            </h3>
+            <p className="text-gray-500 dark:text-gray-400 mt-2">
+              يرجى التواصل مع مدير النظام لربط حسابك بعيادة لتتمكن من الوصول إلى هذه الميزة
+            </p>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (isLoading || profileLoading) {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-64">

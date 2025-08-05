@@ -65,7 +65,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (error) {
         console.error("Error fetching profile:", error);
-        // Don't constantly retry on network errors
+        // Force retry after short delay on errors
+        setTimeout(() => {
+          if (user && !profile) {
+            console.log("Retrying profile fetch after error");
+            setIsProfileFetching(false);
+            refreshProfile();
+          }
+        }, 2000);
         setProfileLoading(false);
         setIsProfileFetching(false);
         return;
@@ -77,11 +84,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsProfileFetching(false);
     } catch (error) {
       console.error("Error in refreshProfile:", error);
-      // Don't retry immediately on network errors
+      // Force retry after short delay on errors
+      setTimeout(() => {
+        if (user && !profile) {
+          console.log("Retrying profile fetch after catch");
+          setIsProfileFetching(false);
+          refreshProfile();
+        }
+      }, 2000);
       setProfileLoading(false);
       setIsProfileFetching(false);
     }
-  }, [user, isProfileFetching]);
+  }, [user, isProfileFetching, profile]);
 
   useEffect(() => {
     let mounted = true;
