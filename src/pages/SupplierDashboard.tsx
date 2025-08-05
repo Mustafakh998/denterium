@@ -230,23 +230,42 @@ export default function SupplierDashboard() {
         </Card>
       )}
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Enhanced Quick Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Product Management</CardTitle>
+            <CardTitle>Inventory</CardTitle>
             <CardDescription>
-              Manage your product catalog and inventory
+              Manage products and stock levels
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
-            <Button className="w-full">
-              <Plus className="h-4 w-4 mr-2" />
-              Add New Product
+            <Button className="w-full" onClick={() => window.location.href = '/supplier-inventory'}>
+              <Package className="h-4 w-4 mr-2" />
+              View Inventory
             </Button>
             <Button variant="outline" className="w-full">
-              <Eye className="h-4 w-4 mr-2" />
-              View All Products
+              <Plus className="h-4 w-4 mr-2" />
+              Add Product
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Pending Payments</CardTitle>
+            <CardDescription>
+              Track dentist payments
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <Button className="w-full" onClick={() => window.location.href = '/supplier-payments'}>
+              <TrendingUp className="h-4 w-4 mr-2" />
+              View Payments
+            </Button>
+            <Button variant="outline" className="w-full">
+              <AlertTriangle className="h-4 w-4 mr-2" />
+              Overdue ({0})
             </Button>
           </CardContent>
         </Card>
@@ -255,7 +274,7 @@ export default function SupplierDashboard() {
           <CardHeader>
             <CardTitle>Orders</CardTitle>
             <CardDescription>
-              View and manage incoming orders
+              Manage incoming orders
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
@@ -265,22 +284,22 @@ export default function SupplierDashboard() {
             </Button>
             <Button variant="outline" className="w-full">
               <ShoppingCart className="h-4 w-4 mr-2" />
-              Pending Orders ({stats.pendingOrders})
+              Pending ({stats.pendingOrders})
             </Button>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Account</CardTitle>
+            <CardTitle>Settings</CardTitle>
             <CardDescription>
-              Manage your supplier profile and settings
+              Account & payment settings
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
-            <Button className="w-full">
+            <Button className="w-full" onClick={() => window.location.href = '/supplier-settings'}>
               <Edit className="h-4 w-4 mr-2" />
-              Edit Profile
+              Payment Settings
             </Button>
             <Button variant="outline" className="w-full">
               <Users className="h-4 w-4 mr-2" />

@@ -912,6 +912,96 @@ export type Database = {
           },
         ]
       }
+      supplier_payment_accounts: {
+        Row: {
+          account_name: string | null
+          account_number: string
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          payment_method: string
+          supplier_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          account_name?: string | null
+          account_number: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          payment_method: string
+          supplier_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          account_name?: string | null
+          account_number?: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          payment_method?: string
+          supplier_id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      supplier_pending_payments: {
+        Row: {
+          amount: number
+          created_at: string | null
+          currency: string | null
+          dentist_id: string
+          description: string | null
+          due_date: string | null
+          id: string
+          notes: string | null
+          order_id: string | null
+          paid_at: string | null
+          payment_account_details: Json | null
+          payment_method: string | null
+          payment_reference: string | null
+          status: string | null
+          supplier_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          currency?: string | null
+          dentist_id: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          order_id?: string | null
+          paid_at?: string | null
+          payment_account_details?: Json | null
+          payment_method?: string | null
+          payment_reference?: string | null
+          status?: string | null
+          supplier_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          currency?: string | null
+          dentist_id?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          order_id?: string | null
+          paid_at?: string | null
+          payment_account_details?: Json | null
+          payment_method?: string | null
+          payment_reference?: string | null
+          status?: string | null
+          supplier_id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       supplier_reviews: {
         Row: {
           created_at: string | null
@@ -980,10 +1070,13 @@ export type Database = {
           created_at: string | null
           description: string | null
           email: string | null
+          fib_account_number: string | null
           id: string
           is_active: boolean | null
           logo_url: string | null
+          payment_accounts: Json | null
           phone: string | null
+          qi_card_number: string | null
           rating: number | null
           tax_id: string | null
           total_reviews: number | null
@@ -991,6 +1084,7 @@ export type Database = {
           user_id: string | null
           verified: boolean | null
           website: string | null
+          zaincash_number: string | null
         }
         Insert: {
           address?: string | null
@@ -1001,10 +1095,13 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           email?: string | null
+          fib_account_number?: string | null
           id?: string
           is_active?: boolean | null
           logo_url?: string | null
+          payment_accounts?: Json | null
           phone?: string | null
+          qi_card_number?: string | null
           rating?: number | null
           tax_id?: string | null
           total_reviews?: number | null
@@ -1012,6 +1109,7 @@ export type Database = {
           user_id?: string | null
           verified?: boolean | null
           website?: string | null
+          zaincash_number?: string | null
         }
         Update: {
           address?: string | null
@@ -1022,10 +1120,13 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           email?: string | null
+          fib_account_number?: string | null
           id?: string
           is_active?: boolean | null
           logo_url?: string | null
+          payment_accounts?: Json | null
           phone?: string | null
+          qi_card_number?: string | null
           rating?: number | null
           tax_id?: string | null
           total_reviews?: number | null
@@ -1033,6 +1134,7 @@ export type Database = {
           user_id?: string | null
           verified?: boolean | null
           website?: string | null
+          zaincash_number?: string | null
         }
         Relationships: []
       }

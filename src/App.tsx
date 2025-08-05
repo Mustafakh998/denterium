@@ -26,6 +26,9 @@ import Training from "./pages/Training";
 import SupplierRegister from "./pages/SupplierRegister";
 import SupplierDashboard from "./pages/SupplierDashboard";
 import Suppliers from "./pages/Suppliers";
+import InventoryManagement from "./components/supplier/InventoryManagement";
+import PendingPayments from "./components/supplier/PendingPayments";
+import PaymentSettings from "./components/supplier/PaymentSettings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -57,9 +60,12 @@ const App = () => (
             <Route path="/inventory" element={<Inventory />} />
             <Route path="/backup" element={<Backup />} />
             <Route path="/training" element={<Training />} />
-            <Route path="/supplier-register" element={<SupplierRegister />} />
-            <Route path="/supplier-dashboard" element={<SupplierDashboard />} />
-            <Route path="/suppliers" element={<Suppliers />} />
+          <Route path="/supplier-register" element={<SupplierRegister />} />
+          <Route path="/supplier-dashboard" element={<SupplierDashboard />} />
+          <Route path="/supplier-inventory" element={<InventoryManagement />} />
+          <Route path="/supplier-payments" element={<PendingPayments />} />
+          <Route path="/supplier-settings" element={<PaymentSettings />} />
+          <Route path="/suppliers" element={<Suppliers />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
