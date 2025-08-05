@@ -21,6 +21,7 @@ export default function Auth() {
   const [phone, setPhone] = useState("");
   const [role, setRole] = useState("dentist");
   const [loading, setLoading] = useState(false);
+  const [forgotPasswordMode, setForgotPasswordMode] = useState(false);
   
   // Supplier-specific fields
   const [companyName, setCompanyName] = useState("");
@@ -47,6 +48,33 @@ export default function Auth() {
     setLoading(true);
     await signIn(email, password);
     setLoading(false);
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "تم إرسال رابط استعادة كلمة المرور",
+        description: "يرجى التحقق من بريدك الإلكتروني لاستعادة كلمة المرور.",
+      });
+      setForgotPasswordMode(false);
+    } catch (error: any) {
+      toast({
+        title: "خطأ",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -176,34 +204,71 @@ export default function Auth() {
             </TabsList>
             
             <TabsContent value="signin">
-              <form onSubmit={handleSignIn} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">البريد الإلكتروني</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="text-right"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password">كلمة المرور</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    className="text-right"
-                  />
-                </div>
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
-                  تسجيل الدخول
-                </Button>
-              </form>
+              {forgotPasswordMode ? (
+                <form onSubmit={handleForgotPassword} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">البريد الإلكتروني</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      className="text-right"
+                      placeholder="أدخل بريدك الإلكتروني"
+                    />
+                  </div>
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
+                    إرسال رابط الاستعادة
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="w-full"
+                    onClick={() => setForgotPasswordMode(false)}
+                  >
+                    العودة للدخول
+                  </Button>
+                </form>
+              ) : (
+                <form onSubmit={handleSignIn} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">البريد الإلكتروني</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      className="text-right"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="password">كلمة المرور</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      className="text-right"
+                    />
+                  </div>
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
+                    تسجيل الدخول
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="w-full text-sm"
+                    onClick={() => setForgotPasswordMode(true)}
+                  >
+                    نسيت كلمة المرور؟
+                  </Button>
+                </form>
+              )}
             </TabsContent>
             
             <TabsContent value="signup">
