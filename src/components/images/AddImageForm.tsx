@@ -124,11 +124,22 @@ export default function AddImageForm({ onSuccess }: AddImageFormProps) {
       const fileName = `${Date.now()}.${fileExt}`;
       const filePath = `medical-images/${profile?.clinic_id}/${fileName}`;
 
-      // Note: In a real implementation, you would upload to Supabase Storage
-      // For now, we'll simulate the upload and return a placeholder URL
-      const imageUrl = `https://via.placeholder.com/400x300.png?text=Medical+Image`;
+      // Upload to Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('medical-images')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw new Error('فشل في رفع الصورة');
+      }
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('medical-images')
+        .getPublicUrl(filePath);
       
-      return imageUrl;
+      return publicUrl;
     } catch (error) {
       console.error("Error uploading image:", error);
       throw error;

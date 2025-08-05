@@ -18,6 +18,7 @@ import Reports from "./pages/Reports";
 import Features from "./pages/Features";
 import Subscription from "./pages/Subscription";
 import AdminPayments from "./pages/AdminPayments";
+import SuperAdminDashboard from "./pages/SuperAdminDashboard";
 import Communication from "./pages/Communication";
 import Inventory from "./pages/Inventory";
 import Backup from "./pages/Backup";
@@ -48,6 +49,7 @@ const App = () => (
             <Route path="/features" element={<Features />} />
             <Route path="/subscription" element={<Subscription />} />
             <Route path="/admin/payments" element={<AdminPayments />} />
+            <Route path="/super-admin" element={<SuperAdminDashboard />} />
             <Route path="/communication" element={<Communication />} />
             <Route path="/inventory" element={<Inventory />} />
             <Route path="/backup" element={<Backup />} />

@@ -57,6 +57,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     ...(profile?.role === 'admin' ? [
       { icon: ShieldCheck, label: "إدارة المدفوعات", href: "/admin/payments" }
     ] : []),
+    ...(profile?.system_role === 'super_admin' ? [
+      { icon: ShieldCheck, label: "إدارة النظام", href: "/super-admin" }
+    ] : []),
     { icon: Settings, label: "الإعدادات", href: "/settings" },
   ];
 

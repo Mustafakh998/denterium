@@ -1,37 +1,38 @@
-import React, { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import DashboardLayout from "@/components/layout/DashboardLayout";
-import DashboardStats from "@/components/dashboard/DashboardStats";
+import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, Users, Plus, Activity } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useAuth } from "@/contexts/AuthContext";
+import { Navigate } from "react-router-dom";
+import DashboardLayout from "@/components/layout/DashboardLayout";
+import DashboardStats from "@/components/dashboard/DashboardStats";
+import ComingSoonFeatures from "@/components/features/ComingSoonFeatures";
+import AddPatientForm from "@/components/patients/AddPatientForm";
+import AddAppointmentForm from "@/components/appointments/AddAppointmentForm";
+import AddInvoiceForm from "@/components/billing/AddInvoiceForm";
+import { User, Calendar, FileText, Activity } from "lucide-react";
 
-const Index = () => {
-  const { user, loading, profile } = useAuth();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!loading && !user) {
-      navigate("/auth");
-    }
-  }, [user, loading, navigate]);
+export default function Index() {
+  const { user, profile, loading } = useAuth();
+  const [addPatientOpen, setAddPatientOpen] = useState(false);
+  const [addAppointmentOpen, setAddAppointmentOpen] = useState(false);
+  const [addInvoiceOpen, setAddInvoiceOpen] = useState(false);
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
       </div>
     );
   }
 
   if (!user) {
-    return null;
+    return <Navigate to="/auth" replace />;
   }
 
   return (
     <DashboardLayout>
-      <div className="space-y-8">
+      <div className="space-y-6">
         {/* Welcome Section */}
         <div className="bg-gradient-to-l from-blue-600 to-purple-600 rounded-lg p-6 text-white">
           <h1 className="text-3xl font-bold mb-2">
@@ -45,131 +46,114 @@ const Index = () => {
         {/* Stats Overview */}
         <DashboardStats />
 
-        {/* Quick Actions & Recent Activity */}
-        <div className="grid gap-6 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Activity className="h-5 w-5" />
-                الإجراءات السريعة
-              </CardTitle>
-              <CardDescription>
-                الميزات الأكثر استخداماً
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Button 
-                className="w-full justify-start" 
-                variant="outline"
-                onClick={() => navigate("/patients")}
-              >
-                <Plus className="ml-2 h-4 w-4" />
-                إضافة مريض جديد
-              </Button>
-              <Button 
-                className="w-full justify-start" 
-                variant="outline"
-                onClick={() => navigate("/appointments")}
-              >
-                <Calendar className="ml-2 h-4 w-4" />
-                جدولة موعد
-              </Button>
-              <Button 
-                className="w-full justify-start" 
-                variant="outline"
-                onClick={() => navigate("/patients")}
-              >
-                <Users className="ml-2 h-4 w-4" />
-                عرض جميع المرضى
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>النشاط الأخير</CardTitle>
-              <CardDescription>
-                آخر التحديثات من عيادتك
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center space-x-reverse space-x-3">
-                  <div>
-                    <p className="text-sm font-medium">تسجيل مريض جديد</p>
-                    <p className="text-xs text-muted-foreground">منذ ساعتين</p>
-                  </div>
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                </div>
-                <div className="flex items-center space-x-reverse space-x-3">
-                  <div>
-                    <p className="text-sm font-medium">موعد مكتمل</p>
-                    <p className="text-xs text-muted-foreground">منذ 4 ساعات</p>
-                  </div>
-                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                </div>
-                <div className="flex items-center space-x-reverse space-x-3">
-                  <div>
-                    <p className="text-sm font-medium">تحديث خطة العلاج</p>
-                    <p className="text-xs text-muted-foreground">منذ 6 ساعات</p>
-                  </div>
-                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Coming Soon Features */}
+        {/* Quick Actions */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Activity className="h-5 w-5" />
-              الميزات القادمة
+              الإجراءات السريعة
             </CardTitle>
             <CardDescription>
-              ميزات جديدة قيد التطوير لتحسين تجربة إدارة العيادة
+              الإجراءات الأكثر استخداماً في النظام
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4 md:grid-cols-3">
-              <div className="p-4 border rounded-lg bg-blue-50 dark:bg-blue-950/20">
-                <h4 className="font-medium text-blue-900 dark:text-blue-100">
-                  🦷 نماذج ثلاثية الأبعاد
-                </h4>
-                <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
-                  تصور تفاعلي للأسنان
-                </p>
-              </div>
-              <div className="p-4 border rounded-lg bg-purple-50 dark:bg-purple-950/20">
-                <h4 className="font-medium text-purple-900 dark:text-purple-100">
-                  📊 تحليل الأشعة
-                </h4>
-                <p className="text-sm text-purple-700 dark:text-purple-300 mt-1">
-                  ذكاء اصطناعي للتشخيص
-                </p>
-              </div>
-              <div className="p-4 border rounded-lg bg-green-50 dark:bg-green-950/20">
-                <h4 className="font-medium text-green-900 dark:text-green-100">
-                  💳 دفع محلي
-                </h4>
-                <p className="text-sm text-green-700 dark:text-green-300 mt-1">
-                  طرق دفع عراقية
-                </p>
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Dialog open={addPatientOpen} onOpenChange={setAddPatientOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="h-20 flex flex-col gap-2">
+                    <User className="h-6 w-6" />
+                    إضافة مريض جديد
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>إضافة مريض جديد</DialogTitle>
+                    <DialogDescription>
+                      أدخل بيانات المريض الجديد
+                    </DialogDescription>
+                  </DialogHeader>
+                  <AddPatientForm onSuccess={() => setAddPatientOpen(false)} />
+                </DialogContent>
+              </Dialog>
+
+              <Dialog open={addAppointmentOpen} onOpenChange={setAddAppointmentOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="h-20 flex flex-col gap-2">
+                    <Calendar className="h-6 w-6" />
+                    جدولة موعد
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>جدولة موعد جديد</DialogTitle>
+                    <DialogDescription>
+                      أدخل بيانات الموعد الجديد
+                    </DialogDescription>
+                  </DialogHeader>
+                  <AddAppointmentForm onSuccess={() => setAddAppointmentOpen(false)} />
+                </DialogContent>
+              </Dialog>
+
+              <Dialog open={addInvoiceOpen} onOpenChange={setAddInvoiceOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="h-20 flex flex-col gap-2">
+                    <FileText className="h-6 w-6" />
+                    إنشاء فاتورة
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>إنشاء فاتورة جديدة</DialogTitle>
+                    <DialogDescription>
+                      أدخل بيانات الفاتورة الجديدة
+                    </DialogDescription>
+                  </DialogHeader>
+                  <AddInvoiceForm onSuccess={() => setAddInvoiceOpen(false)} />
+                </DialogContent>
+              </Dialog>
             </div>
-            <Button 
-              variant="outline" 
-              className="w-full mt-4"
-              onClick={() => navigate("/features")}
-            >
-              عرض جميع الميزات القادمة
-            </Button>
           </CardContent>
         </Card>
+
+        {/* Recent Activity */}
+        <Card>
+          <CardHeader>
+            <CardTitle>النشاط الأخير</CardTitle>
+            <CardDescription>
+              آخر التحديثات من عيادتك
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center space-x-reverse space-x-3">
+                <div>
+                  <p className="text-sm font-medium">تسجيل مريض جديد</p>
+                  <p className="text-xs text-muted-foreground">منذ ساعتين</p>
+                </div>
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              </div>
+              <div className="flex items-center space-x-reverse space-x-3">
+                <div>
+                  <p className="text-sm font-medium">موعد مكتمل</p>
+                  <p className="text-xs text-muted-foreground">منذ 4 ساعات</p>
+                </div>
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+              </div>
+              <div className="flex items-center space-x-reverse space-x-3">
+                <div>
+                  <p className="text-sm font-medium">تحديث خطة العلاج</p>
+                  <p className="text-xs text-muted-foreground">منذ 6 ساعات</p>
+                </div>
+                <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Coming Soon Features */}
+        <ComingSoonFeatures />
       </div>
     </DashboardLayout>
   );
-};
-
-export default Index;
+}

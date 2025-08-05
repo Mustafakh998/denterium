@@ -36,8 +36,8 @@ export default function AdminPayments() {
   const [rejectionReason, setRejectionReason] = useState('');
   const [processing, setProcessing] = useState(false);
 
-  // Check if user is admin
-  const isAdmin = profile?.role === 'admin';
+  // Check if user is admin or super admin
+  const isAdmin = profile?.role === 'admin' || profile?.system_role === 'super_admin';
 
   const { data: payments = [], refetch } = useQuery({
     queryKey: ['manual-payments'],
