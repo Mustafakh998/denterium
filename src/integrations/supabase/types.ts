@@ -1303,6 +1303,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      is_super_admin: {
+        Args: { user_uuid: string }
+        Returns: boolean
+      }
     }
     Enums: {
       payment_method:
