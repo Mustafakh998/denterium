@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -103,13 +104,14 @@ export default function Suppliers() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <DashboardLayout>
+      <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col space-y-4">
         <div>
-          <h1 className="text-3xl font-bold">Dental Suppliers</h1>
-          <p className="text-muted-foreground">
-            Connect with verified dental equipment and material suppliers
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">الموردين</h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            تواصل مع موردي المعدات والمواد الطبية المعتمدين
           </p>
         </div>
 
@@ -117,7 +119,7 @@ export default function Suppliers() {
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input
-            placeholder="Search suppliers, products, or locations..."
+            placeholder="البحث في الموردين والمنتجات..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
@@ -144,7 +146,7 @@ export default function Suppliers() {
                     </CardTitle>
                     {supplier.verified && (
                       <Badge variant="default" className="text-xs">
-                        Verified
+                        معتمد
                       </Badge>
                     )}
                   </div>
@@ -207,12 +209,12 @@ export default function Suppliers() {
               {/* Action Buttons */}
               <div className="flex space-x-2 pt-2">
                 <Button size="sm" className="flex-1">
-                  <ShoppingCart className="h-4 w-4 mr-2" />
-                  View Products
+                  <ShoppingCart className="h-4 w-4 ml-2" />
+                  عرض المنتجات
                 </Button>
                 <Button variant="outline" size="sm" className="flex-1">
-                  <MessageCircle className="h-4 w-4 mr-2" />
-                  Contact
+                  <MessageCircle className="h-4 w-4 ml-2" />
+                  تواصل
                 </Button>
               </div>
             </CardContent>
@@ -225,17 +227,18 @@ export default function Suppliers() {
         <div className="text-center py-12">
           <Search className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
           <h3 className="text-lg font-medium text-muted-foreground mb-2">
-            No suppliers found
+            لم يتم العثور على موردين
           </h3>
           <p className="text-sm text-muted-foreground">
             {searchTerm 
-              ? "Try adjusting your search terms"
-              : "No suppliers are currently available"
+              ? "جرب تعديل كلمات البحث"
+              : "لا توجد موردين متاحين حالياً"
             }
           </p>
         </div>
       )}
 
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }
