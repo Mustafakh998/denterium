@@ -75,39 +75,39 @@ export default function Subscription() {
   ];
 
   const checkSubscriptionStatus = async () => {
-    if (!user || checkingStatus) return; // Prevent multiple simultaneous calls
+    if (!user || checkingStatus) return;
     
     setCheckingStatus(true);
     try {
-      const { data, error } = await supabase.functions.invoke('check-subscription');
-      
-      if (error) {
-        console.error('Check subscription error:', error);
-        
-        // Handle specific Stripe errors
-        if (error.message?.includes('rate limit')) {
-          toast({
-            title: "يرجى الانتظار",
-            description: "الكثير من الطلبات، يرجى المحاولة بعد قليل",
-            variant: "destructive",
-          });
-          return;
-        }
-        
-        if (error.message?.includes('business name')) {
-          toast({
-            title: "خطأ في إعداد Stripe",
-            description: "يرجى إعداد اسم الشركة في حساب Stripe أولاً",
-            variant: "destructive",
-          });
-          return;
-        }
-        
+      // Check subscription status from database directly (no Stripe needed)
+      const { data: subData, error } = await supabase
+        .from('subscriptions')
+        .select('*')
+        .eq('clinic_id', profile?.clinic_id)
+        .eq('status', 'approved')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
         throw error;
       }
-      
-      setSubscription(data);
-      console.log('Subscription status:', data);
+
+      if (subData) {
+        setSubscription({
+          subscribed: true,
+          plan: subData.plan,
+          subscription_end: subData.current_period_end,
+          payment_method: subData.payment_method
+        });
+      } else {
+        setSubscription({
+          subscribed: false,
+          plan: null,
+          subscription_end: null,
+          payment_method: null
+        });
+      }
     } catch (error) {
       console.error('Error checking subscription:', error);
       toast({
@@ -330,18 +330,20 @@ export default function Subscription() {
                 </ul>
                 
                 <div className="space-y-2">
-                  {/* Credit Card Payment */}
-                  <Button
-                    onClick={() => handleStripeSubscription(plan.id)}
-                    disabled={loading || subscription?.plan === plan.id}
-                    className="w-full"
-                  >
-                    <CreditCard className="h-4 w-4 ml-2" />
-                    الدفع بالبطاقة الائتمانية
-                  </Button>
                   
-                  {/* Manual Payment Options */}
+                  {/* Local Payment Method */}
                   <ManualPaymentDialog planId={plan.id} planName={plan.name} price={plan.price} />
+                  
+                  <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-center">
+                    <p className="text-sm text-blue-700 dark:text-blue-300 font-medium mb-2">
+                      طرق الدفع المتاحة:
+                    </p>
+                    <div className="text-xs text-blue-600 dark:text-blue-400 space-y-1">
+                      <p>🟢 كي كارد (Qi Card)</p>
+                      <p>🟡 زين كاش (Zain Cash)</p>
+                      <p>🏦 تحويل بنكي مباشر</p>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -355,7 +357,7 @@ export default function Subscription() {
 // Manual Payment Dialog Component
 function ManualPaymentDialog({ planId, planName, price }: { planId: string, planName: string, price: string }) {
   const [open, setOpen] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<'qi_card' | 'zain_cash'>('qi_card');
+  const [paymentMethod, setPaymentMethod] = useState<'qi_card' | 'zain_cash' | 'bank_transfer'>('qi_card');
   const [senderName, setSenderName] = useState('');
   const [senderPhone, setSenderPhone] = useState('');
   const [transactionRef, setTransactionRef] = useState('');
