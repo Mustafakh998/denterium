@@ -10,16 +10,26 @@ import ComingSoonFeatures from "@/components/features/ComingSoonFeatures";
 import AddPatientForm from "@/components/patients/AddPatientForm";
 import AddAppointmentForm from "@/components/appointments/AddAppointmentForm";
 import AddInvoiceForm from "@/components/billing/AddInvoiceForm";
-import { User, Calendar, FileText, Activity, Building2 } from "lucide-react";
+import { User, Calendar, FileText, Activity, Building2, CreditCard } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function Index() {
-  const { user, profile, loading, signOut } = useAuth();
+  const { user, profile, loading, profileLoading, signOut } = useAuth();
   const navigate = useNavigate();
   const [addPatientOpen, setAddPatientOpen] = useState(false);
   const [addAppointmentOpen, setAddAppointmentOpen] = useState(false);
   const [addInvoiceOpen, setAddInvoiceOpen] = useState(false);
   const [isSupplier, setIsSupplier] = useState<boolean | null>(null);
+  const [hasApprovedPayment, setHasApprovedPayment] = useState<boolean | null>(null);
+
+  console.log('Index page render:', { 
+    user: !!user, 
+    profile: !!profile, 
+    loading, 
+    profileLoading, 
+    userId: user?.id, 
+    clinicId: profile?.clinic_id 
+  });
 
   // Check if user is a supplier
   useEffect(() => {
@@ -45,7 +55,35 @@ export default function Index() {
     checkSupplierStatus();
   }, [user, profile]);
 
-  if (loading) {
+  // Check if user has approved payment but no clinic
+  useEffect(() => {
+    const checkApprovedPayment = async () => {
+      if (!user || profile?.clinic_id) {
+        setHasApprovedPayment(false);
+        return;
+      }
+
+      try {
+        console.log('Checking approved payment for user:', user.id);
+        const { data } = await supabase
+          .from('manual_payments')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('status', 'approved')
+          .maybeSingle();
+
+        console.log('Approved payment check result:', !!data);
+        setHasApprovedPayment(!!data);
+      } catch (error) {
+        console.error('Error checking approved payment:', error);
+        setHasApprovedPayment(false);
+      }
+    };
+
+    checkApprovedPayment();
+  }, [user, profile]);
+
+  if (loading || profileLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
@@ -54,16 +92,25 @@ export default function Index() {
   }
 
   if (!user) {
+    console.log('No user, redirecting to auth');
     return <Navigate to="/auth" replace />;
   }
 
   // Redirect suppliers to their dashboard
   if (profile?.role === 'supplier' || isSupplier) {
+    console.log('User is supplier, redirecting to supplier dashboard');
     return <Navigate to="/supplier-dashboard" replace />;
+  }
+
+  // If user has approved payment but no clinic, redirect to approved dentist dashboard
+  if (hasApprovedPayment && !profile?.clinic_id) {
+    console.log('User has approved payment but no clinic, redirecting to approved dentist dashboard');
+    return <Navigate to="/approved-dentist" replace />;
   }
   
   // Check if user needs to create a clinic (but first check if they have approved subscription)
   if (user && profile && !profile.clinic_id) {
+    console.log('User has profile but no clinic, showing create clinic prompt');
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-6">
         <Card className="w-full max-w-md">
@@ -78,14 +125,11 @@ export default function Index() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <Button onClick={() => navigate('/create-clinic')} className="w-full">
-                <Building2 className="ml-2 h-4 w-4" />
-                إنشاء عيادة جديدة
+              <Button onClick={() => navigate('/subscription')} className="w-full">
+                <CreditCard className="ml-2 h-4 w-4" />
+                عرض الاشتراكات والدفع
               </Button>
-              <Button variant="outline" onClick={() => navigate('/subscription')} className="w-full">
-                عرض الاشتراكات
-              </Button>
-              <Button variant="ghost" onClick={signOut} className="w-full">
+              <Button variant="outline" onClick={signOut} className="w-full">
                 تسجيل الخروج
               </Button>
             </div>
@@ -94,6 +138,14 @@ export default function Index() {
       </div>
     );
   }
+
+  // If no profile at all, show loading or redirect to auth
+  if (!profile) {
+    console.log('No profile found, redirecting to auth');
+    return <Navigate to="/auth" replace />;
+  }
+
+  console.log('Rendering main dashboard for user with clinic:', profile.clinic_id);
 
   return (
     <DashboardLayout>

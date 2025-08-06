@@ -22,7 +22,8 @@ import {
 } from "lucide-react";
 
 export default function Settings() {
-  const { user, profile, loading, refreshProfile } = useAuth();
+  const auth = useAuth();
+  const { user, profile, loading, refreshProfile } = auth || {};
   const { toast } = useToast();
   const { theme, setTheme } = useTheme();
   const [saving, setSaving] = useState(false);
