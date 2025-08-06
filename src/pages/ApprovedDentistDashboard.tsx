@@ -76,7 +76,7 @@ const ApprovedDentistDashboard = () => {
     setCreatingClinic(true);
     try {
       // Call the single, secure database function
-      const { error } = await supabase.rpc('create_clinic_for_approved_dentist', {
+      const { error } = await (supabase.rpc as any)('create_clinic_for_approved_dentist', {
         name_input: formData.name,
         address_input: formData.address,
         phone_input: formData.phone,
