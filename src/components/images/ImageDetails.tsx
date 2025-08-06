@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -100,14 +101,33 @@ export default function ImageDetails({ image }: ImageDetailsProps) {
     return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (image.image_url) {
-      const link = document.createElement('a');
-      link.href = image.image_url;
-      link.download = image.title || 'medical-image';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      try {
+        let downloadUrl = image.image_url;
+        
+        // If it's a storage path, create a signed URL for download
+        if (!image.image_url.startsWith('http')) {
+          const { data, error } = await supabase.storage
+            .from('medical-images')
+            .createSignedUrl(image.image_url, 60); // 1 minute for download
+            
+          if (error) {
+            console.error('Error creating download URL:', error);
+            return;
+          }
+          downloadUrl = data?.signedUrl || image.image_url;
+        }
+
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = image.title || 'medical-image';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } catch (error) {
+        console.error('Error downloading image:', error);
+      }
     }
   };
 

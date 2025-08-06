@@ -124,6 +124,8 @@ export default function AddImageForm({ onSuccess }: AddImageFormProps) {
       const fileName = `${Date.now()}.${fileExt}`;
       const filePath = `${profile?.clinic_id}/${fileName}`;
 
+      console.log('Uploading image to path:', filePath);
+
       // Upload to Supabase Storage
       const { error: uploadError } = await supabase.storage
         .from('medical-images')
@@ -131,15 +133,11 @@ export default function AddImageForm({ onSuccess }: AddImageFormProps) {
 
       if (uploadError) {
         console.error('Upload error:', uploadError);
-        throw new Error('فشل في رفع الصورة');
+        throw new Error('فشل في رفع الصورة: ' + uploadError.message);
       }
 
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('medical-images')
-        .getPublicUrl(filePath);
-      
-      return publicUrl;
+      // Store the file path, we'll generate signed URLs when displaying
+      return filePath;
     } catch (error) {
       console.error("Error uploading image:", error);
       throw error;

@@ -95,17 +95,19 @@ export default function MedicalImageEditor({ imageUrl, imageName, onSave, onClos
 
         // Add image to canvas as background
         FabricImage.fromURL(img.src).then((fabricImg) => {
-          fabricImg.set({
-            scaleX: canvasWidth / img.width,
-            scaleY: canvasHeight / img.height,
-            selectable: false,
-            evented: false,
-          });
-          
-          canvas.add(fabricImg);
-          canvas.sendObjectToBack(fabricImg);
-          canvas.renderAll();
-          saveToHistory(canvas);
+          if (fabricImg) {
+            fabricImg.set({
+              scaleX: canvasWidth / img.width,
+              scaleY: canvasHeight / img.height,
+              selectable: false,
+              evented: false,
+            });
+            
+            canvas.add(fabricImg);
+            canvas.sendObjectToBack(fabricImg);
+            canvas.renderAll();
+            saveToHistory(canvas);
+          }
         });
 
         // Initialize drawing brush

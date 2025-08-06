@@ -84,12 +84,34 @@ export default function MedicalImages() {
 
       if (error) throw error;
 
-      const formattedImages = data?.map((image: any) => ({
-        ...image,
-        patient_first_name: image.patients?.first_name || "",
-        patient_last_name: image.patients?.last_name || "",
-        patient_avatar_url: image.patients?.avatar_url || "",
-      })) || [];
+      const formattedImages = await Promise.all(data?.map(async (image: any) => {
+        // Generate signed URLs for images
+        let signedImageUrl = image.image_url;
+        let signedThumbnailUrl = image.thumbnail_url;
+
+        if (image.image_url && !image.image_url.startsWith('http')) {
+          const { data: imageUrlData } = await supabase.storage
+            .from('medical-images')
+            .createSignedUrl(image.image_url, 3600); // 1 hour expiry
+          signedImageUrl = imageUrlData?.signedUrl || image.image_url;
+        }
+
+        if (image.thumbnail_url && !image.thumbnail_url.startsWith('http')) {
+          const { data: thumbnailUrlData } = await supabase.storage
+            .from('medical-images')
+            .createSignedUrl(image.thumbnail_url, 3600);
+          signedThumbnailUrl = thumbnailUrlData?.signedUrl || image.thumbnail_url;
+        }
+
+        return {
+          ...image,
+          image_url: signedImageUrl,
+          thumbnail_url: signedThumbnailUrl,
+          patient_first_name: image.patients?.first_name || "",
+          patient_last_name: image.patients?.last_name || "",
+          patient_avatar_url: image.patients?.avatar_url || "",
+        };
+      }) || []);
 
       setImages(formattedImages);
     } catch (error) {
