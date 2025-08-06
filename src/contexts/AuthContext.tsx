@@ -39,18 +39,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const refreshProfile = useCallback(async () => {
     if (!user) {
-      console.log("No user found, skipping profile fetch");
       setProfileLoading(false);
       return;
     }
     
     // Prevent multiple simultaneous requests
     if (isProfileFetching) {
-      console.log("Profile fetch already in progress, skipping");
       return;
     }
     
-    console.log("Fetching profile for user:", user.id);
     setIsProfileFetching(true);
     setProfileLoading(true);
     
@@ -61,8 +58,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .eq("user_id", user.id)
         .maybeSingle();
       
-      console.log("Profile fetch result:", { data, error });
-      
       if (error) {
         console.error("Error fetching profile:", error);
         setProfileLoading(false);
@@ -70,7 +65,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
       
-      console.log("Setting profile:", data);
       setProfile(data);
       setProfileLoading(false);
       setIsProfileFetching(false);
@@ -79,7 +73,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setProfileLoading(false);
       setIsProfileFetching(false);
     }
-  }, [user]);
+  }, [user, isProfileFetching]);
 
   useEffect(() => {
     let mounted = true;
@@ -88,7 +82,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log("Auth state changed:", event, session?.user?.id);
         if (!mounted) return;
         
         setSession(session);
@@ -113,7 +106,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log("Initial session check:", session?.user?.id);
       if (!mounted) return;
       
       setSession(session);
@@ -254,8 +246,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     profile,
     refreshProfile,
   };
-
-  console.log("AuthProvider rendering with value:", value);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

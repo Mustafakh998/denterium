@@ -527,6 +527,7 @@ function ManualPaymentDialog({ planId, planName, price, isUpgrade }: { planId: s
       const { error: paymentError } = await supabase
         .from('manual_payments')
         .insert({
+          user_id: user.id, // Required field that was missing
           clinic_id: profile?.clinic_id, // Allow null clinic_id for new users
           payment_method: paymentMethod,
           amount_iqd: parseInt(price.replace(/[^\d]/g, '')),

@@ -81,14 +81,14 @@ serve(async (req) => {
       )
     }
 
-    // Get user's clinic_id from profiles
+    // Get user's clinic_id from profiles (allow null for new users)
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('clinic_id')
       .eq('user_id', user.id)
       .single()
 
-    if (profileError || !profile?.clinic_id) {
+    if (profileError) {
       logStep('Failed to get user profile', profileError)
       return new Response(
         JSON.stringify({ error: 'User profile not found' }),
@@ -99,7 +99,7 @@ serve(async (req) => {
       )
     }
 
-    logStep('User profile retrieved', { clinicId: profile.clinic_id })
+    logStep('User profile retrieved', { clinicId: profile?.clinic_id || 'No clinic yet' })
 
     // Step 1: Get OAuth token from FIB
     logStep('Getting OAuth token from FIB')
@@ -170,9 +170,9 @@ serve(async (req) => {
 
     // Step 3: Store pending subscription in database
     const subscriptionData = {
-      clinic_id: profile.clinic_id,
+      clinic_id: profile?.clinic_id, // Allow null for new users
       plan: plan,
-      amount_usd: 0, // FIB uses IQD
+      amount_usd: Math.round(parseInt(amount) / 1316), // Convert IQD to USD roughly
       amount_iqd: parseInt(amount),
       payment_method: 'fib' as const,
       status: 'pending' as const,

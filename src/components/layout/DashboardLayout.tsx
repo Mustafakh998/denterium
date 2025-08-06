@@ -39,12 +39,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Debug profile loading
-  console.log("DashboardLayout - Profile:", profile);
-  console.log("DashboardLayout - Profile Loading:", profileLoading);
-
   const handleRefreshProfile = async () => {
-    console.log("Manually refreshing profile...");
     await refreshProfile();
   };
 
@@ -85,17 +80,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 دنتال برو 
               </h1>
               <Heart className="h-8 w-8 text-blue-600" />
-              {/* Debug info - remove after fixing */}
-              {profile && (
-                <span className="text-xs text-gray-500">
-                  Role: {profile.role} | System: {profile.system_role}
-                </span>
-              )}
-              {!profile && (
-                <Button onClick={handleRefreshProfile} size="sm" variant="outline">
-                  تحديث الملف الشخصي
-                </Button>
-              )}
             </div>
             
             <div className="flex items-center space-x-reverse space-x-4">

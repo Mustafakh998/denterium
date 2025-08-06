@@ -54,14 +54,19 @@ export const useSubscriptionFeatures = () => {
             .eq('status', 'approved')
             .maybeSingle();
           
-          // Also check manual payments
+          // Also check manual payments for the current user
           const { data: manualPayment } = await supabase
             .from('manual_payments')
             .select('*')
+            .eq('user_id', profile.user_id)
             .eq('status', 'approved')
             .maybeSingle();
             
-          subscription = userSub || (manualPayment ? { plan: 'basic', status: 'approved' } : null);
+          subscription = userSub || (manualPayment ? { 
+            plan: manualPayment.amount_iqd >= 30000 ? 'enterprise' : 
+                  manualPayment.amount_iqd >= 20000 ? 'premium' : 'basic', 
+            status: 'approved' 
+          } : null);
         }
 
         const userPlan = subscription?.plan || 'basic';
