@@ -194,10 +194,8 @@ export default function SuperAdminDashboard() {
                       </div>
                       <div className="flex gap-2">
                         <Badge variant="outline">
-                          {user.role === 'admin' ? 'مدير' : 
-                           user.role === 'dentist' ? 'طبيب' : 
-                           user.role === 'assistant' ? 'مساعد' : 
-                           user.role === 'receptionist' ? 'استقبال' : 'مريض'}
+                          {user.role === 'dentist' ? 'طبيب' : 
+                           user.role === 'supplier' ? 'مورد' : 'مريض'}
                         </Badge>
                         {user.system_role && user.system_role !== 'user' && (
                           <Badge variant="destructive">

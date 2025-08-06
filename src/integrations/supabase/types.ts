@@ -1325,13 +1325,7 @@ export type Database = {
       payment_status: "pending" | "approved" | "rejected" | "expired"
       subscription_plan: "basic" | "premium" | "enterprise"
       system_role: "super_admin" | "support" | "user"
-      user_role:
-        | "admin"
-        | "dentist"
-        | "assistant"
-        | "receptionist"
-        | "patient"
-        | "supplier"
+      user_role: "patient" | "dentist" | "supplier"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1469,14 +1463,7 @@ export const Constants = {
       payment_status: ["pending", "approved", "rejected", "expired"],
       subscription_plan: ["basic", "premium", "enterprise"],
       system_role: ["super_admin", "support", "user"],
-      user_role: [
-        "admin",
-        "dentist",
-        "assistant",
-        "receptionist",
-        "patient",
-        "supplier",
-      ],
+      user_role: ["patient", "dentist", "supplier"],
     },
   },
 } as const

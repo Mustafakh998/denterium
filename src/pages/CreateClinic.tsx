@@ -101,7 +101,7 @@ const CreateClinic = () => {
         .from('profiles')
         .update({ 
           clinic_id: clinic.id,
-          role: 'admin' // Make them admin of their clinic
+          role: 'dentist' // Make them dentist role for their clinic
         })
         .eq('user_id', user.id);
 

@@ -54,7 +54,7 @@ export default function AddStaffForm({ onSuccess }: AddStaffFormProps) {
           first_name: formData.first_name,
           last_name: formData.last_name,
           phone: formData.phone || null,
-          role: formData.role as "assistant" | "admin" | "dentist" | "receptionist",
+          role: 'dentist' as const, // Simplified role system - all staff are dentists
           specialization: formData.specialization || null,
           license_number: formData.license_number || null,
           clinic_id: profile.clinic_id,

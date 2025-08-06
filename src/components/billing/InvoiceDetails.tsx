@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Calendar, 
   Download, 
@@ -134,12 +135,39 @@ export default function InvoiceDetails({ invoice }: InvoiceDetailsProps) {
     return calculateNetAmount() - (invoice.paid_amount || 0);
   };
 
-  const handleDownload = () => {
-    // In a real implementation, this would generate and download a PDF
-    toast({
-      title: "تحميل الفاتورة",
-      description: "سيتم تنفيذ تحميل ملف PDF للفاتورة",
-    });
+  const handleDownload = async () => {
+    try {
+      const { generateInvoicePDF } = await import('@/components/billing/InvoicePDF');
+      
+      // Get clinic data
+      const { data: clinic, error: clinicError } = await supabase
+        .from('clinics')
+        .select('name, address, phone, email, logo_url')
+        .eq('id', (window as any).currentClinicId || 'current-clinic-id') // This would come from auth context
+        .single();
+
+      if (clinicError) throw clinicError;
+
+      const patient = {
+        first_name: invoice.patient_first_name,
+        last_name: invoice.patient_last_name,
+        phone: invoice.patient_phone
+      };
+
+      await generateInvoicePDF({ invoice, patient, clinic });
+      
+      toast({
+        title: "تم تحميل الفاتورة",
+        description: "تم إنشاء وتحميل ملف PDF للفاتورة بنجاح",
+      });
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast({
+        title: "خطأ في تحميل الفاتورة",
+        description: "حدث خطأ أثناء إنشاء ملف PDF",
+        variant: "destructive",
+      });
+    }
   };
 
   const handlePrint = () => {
