@@ -30,7 +30,7 @@ interface SupplierLayoutProps {
 }
 
 export default function SupplierLayout({ children }: SupplierLayoutProps) {
-  const { user, signOut, profile } = useAuth();
+  const { user, signOut, profile, profileLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -64,7 +64,8 @@ export default function SupplierLayout({ children }: SupplierLayoutProps) {
             
             <div className="flex items-center space-x-4">
               <Badge variant="outline" className="capitalize">
-                {profile?.role === 'supplier' ? 'مورد' : profile?.role || "جاري التحميل..."}
+                {profileLoading ? "جاري التحميل..." :
+                 profile?.role === 'supplier' ? 'مورد' : profile?.role || "مستخدم"}
               </Badge>
               
               <DropdownMenu>

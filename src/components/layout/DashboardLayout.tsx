@@ -84,13 +84,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             
             <div className="flex items-center space-x-reverse space-x-4">
               <Badge variant="outline" className="capitalize">
-                {profile?.system_role === 'super_admin' ? 'مدير عام' :
+                {profileLoading ? "جاري التحميل..." :
+                 profile?.system_role === 'super_admin' ? 'مدير عام' :
                  profile?.role === 'dentist' ? 'طبيب أسنان' :
                  profile?.role === 'assistant' ? 'مساعد' :
                  profile?.role === 'receptionist' ? 'موظف استقبال' :
                  profile?.role === 'admin' ? 'مدير' :
                  profile?.role === 'supplier' ? 'مورد' :
-                 profile?.role || "جاري التحميل..."}
+                 profile?.role || "مستخدم"}
               </Badge>
               
               <DropdownMenu>
