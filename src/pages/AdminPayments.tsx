@@ -48,6 +48,7 @@ export default function AdminPayments() {
   const { data: payments = [], refetch } = useQuery({
     queryKey: ['manual-payments'],
     queryFn: async () => {
+      console.log("Fetching payments for admin...", { isAdmin, profile });
       const { data, error } = await supabase
         .from('manual_payments')
         .select(`
@@ -55,7 +56,7 @@ export default function AdminPayments() {
           clinics (
             name
           ),
-          profiles!manual_payments_user_id_fkey (
+          profiles (
             first_name,
             last_name,
             email
@@ -63,7 +64,11 @@ export default function AdminPayments() {
         `)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching payments:", error);
+        throw error;
+      }
+      console.log("Fetched payments:", data);
       return data as any;
     },
     enabled: isAdmin
