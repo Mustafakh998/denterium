@@ -46,7 +46,11 @@ export default function Auth() {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    await signIn(email, password);
+    
+    console.log('Attempting sign in with:', email);
+    const result = await signIn(email, password);
+    console.log('Sign in result:', result);
+    
     setLoading(false);
   };
 
