@@ -59,12 +59,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { icon: Heart, label: "التواصل", href: "/communication" },
     { icon: ShieldCheck, label: "الموردين", href: "/suppliers" },
     { icon: CreditCard, label: "الاشتراك", href: "/subscription" },
-    ...(profile?.role === 'admin' || profile?.system_role === 'super_admin' ? [
-      { icon: ShieldCheck, label: "إدارة المدفوعات", href: "/admin/payments" },
-      { icon: UserCheck, label: "إدارة المستخدمين", href: "/admin/users" }
-    ] : []),
     ...(profile?.system_role === 'super_admin' ? [
-      { icon: ShieldCheck, label: "لوحة المدير العام", href: "/super-admin" }
+      { icon: ShieldCheck, label: "إدارة المدفوعات", href: "/admin/payments" },
+      { icon: UserCheck, label: "إدارة المستخدمين", href: "/admin/users" },
+      { icon: ShieldCheck, label: "لوحة المدير العام", href: "/super-admin" },
+      { icon: ShieldCheck, label: "إدارة الاشتراكات", href: "/admin/subscriptions" }
     ] : []),
     { icon: Settings, label: "الإعدادات", href: "/settings" },
   ];

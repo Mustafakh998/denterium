@@ -34,6 +34,7 @@ import PaymentSettings from "./components/supplier/PaymentSettings";
 import CreateClinic from "./pages/CreateClinic";
 import CreateSuperAdmin from "./pages/CreateSuperAdmin";
 import SuperAdminSubscriptions from "./pages/SuperAdminSubscriptions";
+import DevTools from "./pages/DevTools";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -81,6 +82,7 @@ const App = () => (
             <Route path="/create-clinic" element={<CreateClinic />} />
             <Route path="/create-super-admin" element={<CreateSuperAdmin />} />
             <Route path="/admin/subscriptions" element={<SuperAdminSubscriptions />} />
+            <Route path="/dev-tools" element={<DevTools />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
