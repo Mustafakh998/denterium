@@ -31,6 +31,7 @@ import OrderManagement from "./components/supplier/OrderManagement";
 import PendingPayments from "./components/supplier/PendingPayments";
 import PaymentSettings from "./components/supplier/PaymentSettings";
 import CreateClinic from "./pages/CreateClinic";
+import CreateSuperAdmin from "./pages/CreateSuperAdmin";
 import SuperAdminSubscriptions from "./pages/SuperAdminSubscriptions";
 import NotFound from "./pages/NotFound";
 
@@ -70,8 +71,9 @@ const App = () => (
           <Route path="/supplier-settings" element={<PaymentSettings />} />
           <Route path="/supplier-orders" element={<OrderManagement />} />
            <Route path="/suppliers" element={<Suppliers />} />
-           <Route path="/create-clinic" element={<CreateClinic />} />
-           <Route path="/admin/subscriptions" element={<SuperAdminSubscriptions />} />
+            <Route path="/create-clinic" element={<CreateClinic />} />
+            <Route path="/create-super-admin" element={<CreateSuperAdmin />} />
+            <Route path="/admin/subscriptions" element={<SuperAdminSubscriptions />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
