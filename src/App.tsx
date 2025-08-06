@@ -40,6 +40,7 @@ import SuperAdminClinics from "./pages/superadmin/SuperAdminClinics";
 import SuperAdminSubscriptions from "./pages/superadmin/SuperAdminSubscriptions";
 import SuperAdminReports from "./pages/superadmin/SuperAdminReports";
 import SuperAdminSettings from "./pages/superadmin/SuperAdminSettings";
+import SuperAdminUserCleanup from "./pages/superadmin/SuperAdminUserCleanup";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -93,6 +94,7 @@ const App = () => (
           <Route path="/super-admin/subscriptions" element={<SuperAdminSubscriptions />} />
           <Route path="/super-admin/reports" element={<SuperAdminReports />} />
           <Route path="/super-admin/settings" element={<SuperAdminSettings />} />
+          <Route path="/super-admin/user-cleanup" element={<SuperAdminUserCleanup />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
