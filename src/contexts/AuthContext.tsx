@@ -38,7 +38,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isProfileFetching, setIsProfileFetching] = useState(false);
 
   const refreshProfile = useCallback(async () => {
-    if (!user) {
+    const currentUser = user || session?.user;
+    
+    if (!currentUser) {
       setProfileLoading(false);
       return;
     }
@@ -55,25 +57,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
-        .eq("user_id", user.id)
+        .eq("user_id", currentUser.id)
         .maybeSingle();
       
       if (error) {
         console.error("Error fetching profile:", error);
-        setProfileLoading(false);
-        setIsProfileFetching(false);
-        return;
+        setProfile(null);
+      } else {
+        setProfile(data);
       }
-      
-      setProfile(data);
-      setProfileLoading(false);
-      setIsProfileFetching(false);
     } catch (error) {
       console.error("Error in refreshProfile:", error);
+      setProfile(null);
+    } finally {
       setProfileLoading(false);
       setIsProfileFetching(false);
     }
-  }, [user, isProfileFetching]);
+  }, [user, session?.user, isProfileFetching]);
 
   useEffect(() => {
     let mounted = true;
