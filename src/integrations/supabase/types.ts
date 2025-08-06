@@ -1302,6 +1302,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_create_clinic: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       generate_prescription_number: {
         Args: Record<PropertyKey, never>
         Returns: string
