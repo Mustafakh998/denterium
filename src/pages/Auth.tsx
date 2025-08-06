@@ -38,20 +38,33 @@ export default function Auth() {
   const { toast } = useToast();
 
   useEffect(() => {
+    // Simple redirect check without loops
     if (user) {
+      console.log('User found, redirecting to home');
       navigate("/");
     }
-  }, [user, navigate]);
+  }, [user?.id, navigate]); // Only depend on user ID
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return; // Prevent multiple submissions
+    
     setLoading(true);
     
-    console.log('Attempting sign in with:', email);
-    const result = await signIn(email, password);
-    console.log('Sign in result:', result);
-    
-    setLoading(false);
+    try {
+      console.log('Attempting sign in with:', email);
+      const result = await signIn(email, password);
+      console.log('Sign in result:', result);
+      
+      if (!result.error) {
+        console.log('Sign in successful');
+        // The auth context will handle redirection
+      }
+    } catch (error) {
+      console.error('Sign in error:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleForgotPassword = async (e: React.FormEvent) => {

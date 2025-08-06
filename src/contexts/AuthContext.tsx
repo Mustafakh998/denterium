@@ -40,7 +40,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const refreshProfile = useCallback(async () => {
     const currentUser = user || session?.user;
     
-    console.log('refreshProfile called with user:', currentUser?.id, 'isProfileFetching:', isProfileFetching);
+    console.log('refreshProfile called with user:', currentUser?.id);
     
     if (!currentUser) {
       console.log('No current user, setting profileLoading to false');
@@ -48,7 +48,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
     
-    // Don't check isProfileFetching here - it can prevent profile loading
+    // Prevent multiple simultaneous requests
+    if (isProfileFetching) {
+      console.log('Profile already being fetched, skipping');
+      return;
+    }
+    
     setIsProfileFetching(true);
     setProfileLoading(true);
     
@@ -74,62 +79,66 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setProfileLoading(false);
       setIsProfileFetching(false);
     }
-  }, [user, session?.user]); // Removed isProfileFetching from dependencies
+  }, []); // EMPTY dependencies to prevent infinite loops
 
   useEffect(() => {
     let mounted = true;
-    let profileFetched = false;
     
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state change:', event, session?.user?.id);
+        
         if (!mounted) return;
         
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
         
-        if (session?.user && !profileFetched) {
-          profileFetched = true;
-          // Use setTimeout to avoid blocking the auth state change
-          setTimeout(() => {
-            if (mounted) {
-              refreshProfile();
-            }
-          }, 100);
-        } else if (!session?.user) {
+        if (session?.user) {
+          // Fetch profile after login
+          refreshProfile();
+        } else {
+          // Clear profile on logout
           setProfile(null);
           setProfileLoading(false);
-          profileFetched = false;
         }
       }
     );
 
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!mounted) return;
-      
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-      
-      if (session?.user && !profileFetched) {
-        profileFetched = true;
-        setTimeout(() => {
-          if (mounted) {
-            refreshProfile();
-          }
-        }, 100);
-      } else {
-        setProfileLoading(false);
+    // Check for existing session on mount
+    const checkSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        console.log('Initial session check:', session?.user?.id);
+        
+        if (!mounted) return;
+        
+        setSession(session);
+        setUser(session?.user ?? null);
+        setLoading(false);
+        
+        if (session?.user) {
+          refreshProfile();
+        } else {
+          setProfileLoading(false);
+        }
+      } catch (error) {
+        console.error('Error checking session:', error);
+        if (mounted) {
+          setLoading(false);
+          setProfileLoading(false);
+        }
       }
-    });
+    };
+
+    checkSession();
 
     return () => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, []); // NO dependencies to prevent infinite loops
+  }, [refreshProfile]); // Only depend on refreshProfile
 
   const signIn = async (email: string, password: string) => {
     try {
