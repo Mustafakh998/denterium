@@ -10,6 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AIAnalysisPanel } from "./AIAnalysisPanel";
+import { DiagnosticTools } from "./DiagnosticTools";
 import { toast } from "sonner";
 import { 
   ZoomIn, 
@@ -408,13 +410,24 @@ export default function MedicalImageEditor({ imageUrl, imageName, onSave, onClos
         <Card className="w-80 h-fit">
           <CardContent className="p-4">
             <Tabs defaultValue="tools" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="tools">أدوات</TabsTrigger>
                 <TabsTrigger value="adjustments">تعديل</TabsTrigger>
                 <TabsTrigger value="view">عرض</TabsTrigger>
+                <TabsTrigger value="ai">ذكاء اصطناعي</TabsTrigger>
               </TabsList>
               
               <TabsContent value="tools" className="space-y-4">
+                <DiagnosticTools 
+                  onToolSelect={(tool, config) => {
+                    console.log('تم اختيار أداة التشخيص:', tool, config);
+                    // Handle diagnostic tool selection
+                  }}
+                  activeTool={activeTool}
+                />
+
+                <Separator />
+
                 {/* Tools */}
                 <div>
                   <Label className="text-sm font-medium">أدوات الرسم</Label>
@@ -674,6 +687,17 @@ export default function MedicalImageEditor({ imageUrl, imageName, onSave, onClos
                     مسح الكل
                   </Button>
                 </div>
+              </TabsContent>
+
+              <TabsContent value="ai" className="space-y-4">
+                <AIAnalysisPanel 
+                  imageUrl={imageUrl} 
+                  imageType="xray"
+                  onAnalysisComplete={(results) => {
+                    console.log('نتائج التحليل:', results);
+                    // Store analysis results in canvas metadata or annotations
+                  }}
+                />
               </TabsContent>
             </Tabs>
           </CardContent>
