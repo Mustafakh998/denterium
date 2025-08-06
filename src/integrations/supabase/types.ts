@@ -69,13 +69,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "appointments_dentist_id_fkey"
-            columns: ["dentist_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "appointments_patient_id_fkey"
             columns: ["patient_id"]
             isOneToOne: false
@@ -265,13 +258,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "manual_payments_reviewed_by_fkey"
-            columns: ["reviewed_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "manual_payments_subscription_id_fkey"
             columns: ["subscription_id"]
             isOneToOne: false
@@ -342,13 +328,6 @@ export type Database = {
             columns: ["clinic_id"]
             isOneToOne: false
             referencedRelation: "clinics"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "medical_images_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
@@ -492,13 +471,6 @@ export type Database = {
             columns: ["clinic_id"]
             isOneToOne: false
             referencedRelation: "clinics"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "prescriptions_dentist_id_fkey"
-            columns: ["dentist_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
@@ -693,7 +665,15 @@ export type Database = {
           updated_at?: string | null
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       subscription_features: {
         Row: {
@@ -816,13 +796,6 @@ export type Database = {
           supplier_id?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "supplier_messages_dentist_id_fkey"
-            columns: ["dentist_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "supplier_messages_order_id_fkey"
             columns: ["order_id"]
@@ -964,13 +937,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "supplier_orders_dentist_id_fkey"
-            columns: ["dentist_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "supplier_orders_supplier_id_fkey"
             columns: ["supplier_id"]
             isOneToOne: false
@@ -1109,13 +1075,6 @@ export type Database = {
             columns: ["order_id"]
             isOneToOne: false
             referencedRelation: "supplier_orders"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "supplier_reviews_reviewer_id_fkey"
-            columns: ["reviewer_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
@@ -1282,13 +1241,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "treatments_dentist_id_fkey"
-            columns: ["dentist_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "treatments_patient_id_fkey"
             columns: ["patient_id"]
             isOneToOne: false
@@ -1302,12 +1254,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      can_create_clinic: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      create_superadmin_user: {
-        Args: { user_email: string; first_name?: string; last_name?: string }
+      create_superadmin_profile: {
+        Args: { p_email: string; p_first_name?: string; p_last_name?: string }
         Returns: string
       }
       generate_prescription_number: {
@@ -1315,7 +1263,7 @@ export type Database = {
         Returns: string
       }
       is_super_admin: {
-        Args: { user_uuid: string }
+        Args: Record<PropertyKey, never>
         Returns: boolean
       }
     }
@@ -1328,8 +1276,8 @@ export type Database = {
         | "fib"
       payment_status: "pending" | "approved" | "rejected" | "expired"
       subscription_plan: "basic" | "premium" | "enterprise"
-      system_role: "super_admin" | "support" | "user"
-      user_role: "patient" | "dentist" | "supplier"
+      system_role: "user" | "super_admin"
+      user_role: "dentist" | "assistant" | "receptionist" | "admin" | "supplier"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1466,8 +1414,8 @@ export const Constants = {
       ],
       payment_status: ["pending", "approved", "rejected", "expired"],
       subscription_plan: ["basic", "premium", "enterprise"],
-      system_role: ["super_admin", "support", "user"],
-      user_role: ["patient", "dentist", "supplier"],
+      system_role: ["user", "super_admin"],
+      user_role: ["dentist", "assistant", "receptionist", "admin", "supplier"],
     },
   },
 } as const
