@@ -1306,6 +1306,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      create_superadmin_user: {
+        Args: { user_email: string; first_name?: string; last_name?: string }
+        Returns: string
+      }
       generate_prescription_number: {
         Args: Record<PropertyKey, never>
         Returns: string
