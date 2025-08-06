@@ -56,6 +56,8 @@ export default function MedicalImageEditor({ imageUrl, imageName, onSave, onClos
   const [fontSize, setFontSize] = useState(20);
   const [zoom, setZoom] = useState(100);
   const [rulerMode, setRulerMode] = useState(false);
+  const [measurementPoints, setMeasurementPoints] = useState<Array<{x: number, y: number}>>([]);
+  const [activeAnnotation, setActiveAnnotation] = useState<string | null>(null);
   
   // Image adjustments
   const [brightness, setBrightness] = useState(0);
@@ -130,7 +132,7 @@ export default function MedicalImageEditor({ imageUrl, imageName, onSave, onClos
         toast.error("فشل في تحميل الصورة");
       };
       
-      img.src = imageUrl;
+    img.src = imageUrl;
     };
 
     loadImage();
@@ -141,6 +143,105 @@ export default function MedicalImageEditor({ imageUrl, imageName, onSave, onClos
       }
     };
   }, [imageUrl]);
+
+  // Handle diagnostic tool selection
+  const handleDiagnosticTool = useCallback((tool: string, config?: any) => {
+    if (!fabricCanvas) return;
+    
+    switch (tool) {
+      case 'measure':
+        setActiveTool('ruler');
+        setRulerMode(true);
+        fabricCanvas.isDrawingMode = false;
+        fabricCanvas.selection = false;
+        toast.info(`تم تفعيل أداة القياس - ${config?.mode || 'distance'}`);
+        break;
+      case 'roi':
+        // Region of Interest - add rectangular selection
+        const rect = new Rect({
+          left: 100,
+          top: 100,
+          width: config?.region?.width || 100,
+          height: config?.region?.height || 100,
+          fill: 'rgba(255, 255, 0, 0.3)',
+          stroke: '#ffff00',
+          strokeWidth: 2,
+          strokeDashArray: [5, 5],
+        });
+        fabricCanvas.add(rect);
+        fabricCanvas.renderAll();
+        toast.success('تم إضافة منطقة الاهتمام');
+        break;
+      case 'enhancement':
+        if (config?.preset) {
+          applyEnhancement(config.preset);
+        }
+        break;
+      case 'crosshair':
+        addCrosshair();
+        break;
+      case 'magnify':
+        handleZoom('in');
+        break;
+      default:
+        console.log('أداة غير معروفة:', tool);
+    }
+  }, [fabricCanvas, zoom]);
+
+  // Apply image enhancement presets
+  const applyEnhancement = (preset: string) => {
+    switch (preset) {
+      case 'bone':
+        setBrightness(20);
+        setContrast(30);
+        break;
+      case 'soft_tissue':
+        setBrightness(-10);
+        setContrast(20);
+        break;
+      case 'dental':
+        setBrightness(15);
+        setContrast(25);
+        setSharpness(20);
+        break;
+      case 'contrast':
+        setContrast(50);
+        break;
+    }
+    toast.success(`تم تطبيق تحسين: ${preset}`);
+  };
+
+  // Add crosshair annotation
+  const addCrosshair = () => {
+    if (!fabricCanvas) return;
+    
+    const centerX = fabricCanvas.width! / 2;
+    const centerY = fabricCanvas.height! / 2;
+    
+    // Horizontal line
+    const hLine = new Rect({
+      left: centerX - 20,
+      top: centerY - 1,
+      width: 40,
+      height: 2,
+      fill: activeColor,
+      selectable: true,
+    });
+    
+    // Vertical line
+    const vLine = new Rect({
+      left: centerX - 1,
+      top: centerY - 20,
+      width: 2,
+      height: 40,
+      fill: activeColor,
+      selectable: true,
+    });
+    
+    fabricCanvas.add(hLine, vLine);
+    fabricCanvas.renderAll();
+    toast.success('تم إضافة العلامة المرجعية');
+  };
 
   // Save canvas state to history
   const saveToHistory = useCallback((canvas: FabricCanvas) => {
@@ -377,9 +478,9 @@ export default function MedicalImageEditor({ imageUrl, imageName, onSave, onClos
   };
 
   return (
-    <div className="w-full h-full flex flex-col space-y-4">
+    <div className="w-full h-screen flex flex-col space-y-4 overflow-hidden">
       {/* Header with main actions */}
-      <div className="flex items-center justify-between p-4 border-b">
+      <div className="flex items-center justify-between p-4 border-b flex-shrink-0">
         <div className="flex items-center space-x-2 space-x-reverse">
           <Badge variant="outline">محرر الصور الطبية</Badge>
           <span className="text-sm text-muted-foreground">
@@ -405,12 +506,12 @@ export default function MedicalImageEditor({ imageUrl, imageName, onSave, onClos
         </div>
       </div>
 
-      <div className="flex flex-1 gap-4 p-4">
-        {/* Toolbox */}
-        <Card className="w-80 h-fit">
-          <CardContent className="p-4">
+      <div className="flex flex-1 gap-4 p-4 overflow-hidden">
+        {/* Toolbox with scrolling */}
+        <Card className="w-80 flex flex-col">
+          <CardContent className="p-4 overflow-y-auto flex-1">
             <Tabs defaultValue="tools" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-4 sticky top-0 z-10 bg-background">
                 <TabsTrigger value="tools">أدوات</TabsTrigger>
                 <TabsTrigger value="adjustments">تعديل</TabsTrigger>
                 <TabsTrigger value="view">عرض</TabsTrigger>
@@ -419,10 +520,7 @@ export default function MedicalImageEditor({ imageUrl, imageName, onSave, onClos
               
               <TabsContent value="tools" className="space-y-4">
                 <DiagnosticTools 
-                  onToolSelect={(tool, config) => {
-                    console.log('تم اختيار أداة التشخيص:', tool, config);
-                    // Handle diagnostic tool selection
-                  }}
+                  onToolSelect={handleDiagnosticTool}
                   activeTool={activeTool}
                 />
 
@@ -704,8 +802,8 @@ export default function MedicalImageEditor({ imageUrl, imageName, onSave, onClos
         </Card>
 
         {/* Canvas area */}
-        <Card className="flex-1">
-          <CardContent className="p-4 flex items-center justify-center min-h-[600px]">
+        <Card className="flex-1 overflow-hidden">
+          <CardContent className="p-4 h-full overflow-auto flex items-center justify-center">
             <div className="border border-border rounded-lg overflow-hidden shadow-lg">
               <canvas ref={canvasRef} className="block" />
             </div>

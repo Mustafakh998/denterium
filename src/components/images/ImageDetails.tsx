@@ -333,21 +333,23 @@ export default function ImageDetails({ image }: ImageDetailsProps) {
 
       {/* Image Editor Dialog */}
       <Dialog open={showEditor} onOpenChange={setShowEditor}>
-        <DialogContent className="max-w-screen-xl max-h-screen-xl h-[90vh] w-[95vw]">
-          <DialogHeader>
-            <DialogTitle>محرر الصور الطبية - {image.title || "صورة طبية"}</DialogTitle>
-          </DialogHeader>
-          <div className="flex-1 overflow-hidden">
-            <MedicalImageEditor
-              imageUrl={image.image_url}
-              imageName={image.title}
-              onClose={() => setShowEditor(false)}
-              onSave={(blob) => {
-                // TODO: Implement save functionality
-                console.log("Saving edited image:", blob);
-                setShowEditor(false);
-              }}
-            />
+        <DialogContent className="max-w-screen-xl h-[95vh] w-[98vw] p-0 overflow-hidden">
+          <div className="h-full flex flex-col">
+            <DialogHeader className="px-6 py-4 border-b flex-shrink-0">
+              <DialogTitle>محرر الصور الطبية - {image.title || "صورة طبية"}</DialogTitle>
+            </DialogHeader>
+            <div className="flex-1 overflow-hidden">
+              <MedicalImageEditor
+                imageUrl={image.image_url}
+                imageName={image.title}
+                onClose={() => setShowEditor(false)}
+                onSave={(blob) => {
+                  // TODO: Implement save functionality
+                  console.log("Saving edited image:", blob);
+                  setShowEditor(false);
+                }}
+              />
+            </div>
           </div>
         </DialogContent>
       </Dialog>

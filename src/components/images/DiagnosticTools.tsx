@@ -74,9 +74,15 @@ export const DiagnosticTools: React.FC<DiagnosticToolsProps> = ({
       config = { mode: measurementMode, calibration: parseFloat(calibrationValue) };
     } else if (toolId === 'roi') {
       config = { region: analysisRegion };
+    } else if (toolId === 'enhancement') {
+      config = { preset: 'general' };
     }
     
     onToolSelect(toolId, config);
+  };
+
+  const handleEnhancementPreset = (preset: string) => {
+    onToolSelect('enhancement', { preset });
   };
 
   return (
@@ -162,7 +168,7 @@ export const DiagnosticTools: React.FC<DiagnosticToolsProps> = ({
                     variant="outline"
                     size="sm"
                     className="text-xs"
-                    onClick={() => onToolSelect('enhance', { preset: 'bone' })}
+                    onClick={() => handleEnhancementPreset('bone')}
                   >
                     Bone Enhancement
                   </Button>
@@ -170,7 +176,7 @@ export const DiagnosticTools: React.FC<DiagnosticToolsProps> = ({
                     variant="outline"
                     size="sm"
                     className="text-xs"
-                    onClick={() => onToolSelect('enhance', { preset: 'soft_tissue' })}
+                    onClick={() => handleEnhancementPreset('soft_tissue')}
                   >
                     Soft Tissue
                   </Button>
@@ -178,7 +184,7 @@ export const DiagnosticTools: React.FC<DiagnosticToolsProps> = ({
                     variant="outline"
                     size="sm"
                     className="text-xs"
-                    onClick={() => onToolSelect('enhance', { preset: 'dental' })}
+                    onClick={() => handleEnhancementPreset('dental')}
                   >
                     Dental Focus
                   </Button>
@@ -186,7 +192,7 @@ export const DiagnosticTools: React.FC<DiagnosticToolsProps> = ({
                     variant="outline"
                     size="sm"
                     className="text-xs"
-                    onClick={() => onToolSelect('enhance', { preset: 'contrast' })}
+                    onClick={() => handleEnhancementPreset('contrast')}
                   >
                     High Contrast
                   </Button>
