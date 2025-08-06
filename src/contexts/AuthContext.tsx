@@ -12,7 +12,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, userData?: any) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   profile: any;
-  refreshProfile: () => Promise<void>;
+  refreshProfile: (currentUser?: any) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -37,12 +37,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Prevent multiple simultaneous profile requests
   const [isProfileFetching, setIsProfileFetching] = useState(false);
 
-  const refreshProfile = useCallback(async () => {
-    const currentUser = user || session?.user;
+  const refreshProfile = useCallback(async (currentUser?: any) => {
+    const userToFetch = currentUser || user || session?.user;
     
-    console.log('refreshProfile called with user:', currentUser?.id);
+    console.log('refreshProfile called with user:', userToFetch?.id);
     
-    if (!currentUser) {
+    if (!userToFetch) {
       console.log('No current user, setting profileLoading to false');
       setProfileLoading(false);
       return;
@@ -58,11 +58,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setProfileLoading(true);
     
     try {
-      console.log('Fetching profile for user:', currentUser.id);
+      console.log('Fetching profile for user:', userToFetch.id);
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
-        .eq("user_id", currentUser.id)
+        .eq("user_id", userToFetch.id)
         .maybeSingle();
       
       if (error) {
@@ -79,7 +79,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setProfileLoading(false);
       setIsProfileFetching(false);
     }
-  }, []); // EMPTY dependencies to prevent infinite loops
+  }, [user, session?.user, isProfileFetching]); // Added proper dependencies
 
   useEffect(() => {
     let mounted = true;
@@ -97,7 +97,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         if (session?.user) {
           // Fetch profile after login
-          refreshProfile();
+          refreshProfile(session.user);
         } else {
           // Clear profile on logout
           setProfile(null);
@@ -119,7 +119,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setLoading(false);
         
         if (session?.user) {
-          refreshProfile();
+          refreshProfile(session.user);
         } else {
           setProfileLoading(false);
         }
