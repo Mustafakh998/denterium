@@ -1254,6 +1254,48 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_clinic_and_link_profile: {
+        Args: {
+          name_input: string
+          address_input: string
+          phone_input: string
+          email_input: string
+          website_input: string
+        }
+        Returns: {
+          id: string
+          name: string
+          address: string
+          phone: string
+          email: string
+          website: string
+          subscription_status: string
+          subscription_plan: string
+          created_at: string
+        }[]
+      }
+      create_clinic_for_approved_dentist: {
+        Args: {
+          name_input: string
+          address_input: string
+          phone_input: string
+          email_input: string
+          website_input: string
+          payment_id_input: string
+          amount_input: number
+        }
+        Returns: {
+          id: string
+          name: string
+          address: string
+          phone: string
+          email: string
+          website: string
+          subscription_status: string
+          subscription_plan: string
+          created_at: string
+        }[]
+      }
       create_superadmin_profile: {
         Args: { p_email: string; p_first_name?: string; p_last_name?: string }
         Returns: string
