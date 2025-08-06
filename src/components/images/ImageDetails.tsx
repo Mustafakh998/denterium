@@ -106,11 +106,27 @@ export default function ImageDetails({ image }: ImageDetailsProps) {
       try {
         let downloadUrl = image.image_url;
         
-        // If it's a storage path, create a signed URL for download
-        if (!image.image_url.startsWith('http')) {
+        // Extract file path if it's a full storage URL
+        const extractFilePath = (url: string) => {
+          if (url?.includes('/storage/v1/object/')) {
+            const parts = url.split('/storage/v1/object/public/medical-images/');
+            if (parts.length > 1) {
+              return parts[1];
+            }
+            const parts2 = url.split('/medical-images/');
+            if (parts2.length > 1) {
+              return parts2[1];
+            }
+          }
+          return url;
+        };
+
+        // If it's a storage URL, create a signed URL for download
+        if (image.image_url.includes('storage/v1/object/')) {
+          const filePath = extractFilePath(image.image_url);
           const { data, error } = await supabase.storage
             .from('medical-images')
-            .createSignedUrl(image.image_url, 60); // 1 minute for download
+            .createSignedUrl(filePath, 60); // 1 minute for download
             
           if (error) {
             console.error('Error creating download URL:', error);
