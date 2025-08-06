@@ -35,6 +35,11 @@ import SuperAdminAuth from "./pages/SuperAdminAuth";
 import SuperAdminManagement from "./pages/SuperAdminManagement";
 import SuperAdminUsers from "./pages/superadmin/SuperAdminUsers";
 import SuperAdminPayments from "./pages/superadmin/SuperAdminPayments";
+import SuperAdminData from "./pages/superadmin/SuperAdminData";
+import SuperAdminClinics from "./pages/superadmin/SuperAdminClinics";
+import SuperAdminSubscriptions from "./pages/superadmin/SuperAdminSubscriptions";
+import SuperAdminReports from "./pages/superadmin/SuperAdminReports";
+import SuperAdminSettings from "./pages/superadmin/SuperAdminSettings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -81,8 +86,13 @@ const App = () => (
             <Route path="/dev-tools" element={<DevTools />} />
             <Route path="/super-admin-auth" element={<SuperAdminAuth />} />
             <Route path="/super-admin-dashboard" element={<SuperAdminManagement />} />
-            <Route path="/super-admin/users" element={<SuperAdminUsers />} />
-            <Route path="/super-admin/payments" element={<SuperAdminPayments />} />
+          <Route path="/super-admin/users" element={<SuperAdminUsers />} />
+          <Route path="/super-admin/payments" element={<SuperAdminPayments />} />
+          <Route path="/super-admin/data" element={<SuperAdminData />} />
+          <Route path="/super-admin/clinics" element={<SuperAdminClinics />} />
+          <Route path="/super-admin/subscriptions" element={<SuperAdminSubscriptions />} />
+          <Route path="/super-admin/reports" element={<SuperAdminReports />} />
+          <Route path="/super-admin/settings" element={<SuperAdminSettings />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
