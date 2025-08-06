@@ -8,147 +8,83 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { Loader2, Building2, CheckCircle, CreditCard, User } from 'lucide-react';
+import { Loader2, Building2, CheckCircle, XCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
-interface ApprovedPayment {
-  id: string;
-  amount_iqd: number;
-  status: string;
-  payment_method: string;
-  created_at: string;
-  sender_name: string;
-  sender_phone: string;
-}
-
-const ApprovedDentistDashboard = () => {
+const CreateClinic = () => {
   const { user, profile, refreshProfile } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   
-  const [loading, setLoading] = useState(true);
-  const [creatingClinic, setCreatingClinic] = useState(false);
-  const [approvedPayment, setApprovedPayment] = useState<ApprovedPayment | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [checkingSubscription, setCheckingSubscription] = useState(true);
+  const [hasApprovedSubscription, setHasApprovedSubscription] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     address: '',
     phone: '',
-    email: user?.email || '',
+    email: '',
     website: ''
   });
 
   useEffect(() => {
-    const checkApprovedPayment = async () => {
-      if (!user) return;
+    const checkSubscriptionStatus = async () => {
+      if (!user || !profile) return;
 
       try {
-        console.log('Checking approved payment for user:', user.id);
-        
-        // Check for approved manual payments
-        const { data: payment } = await supabase
+        const { data: manualPayment } = await supabase
           .from('manual_payments')
           .select('*')
-          .eq('user_id', user.id)
+          .eq('user_id', profile.user_id)
           .eq('status', 'approved')
-          .order('created_at', { ascending: false })
-          .limit(1)
           .maybeSingle();
 
-        console.log('Approved payment found:', payment);
-        setApprovedPayment(payment);
-
-        // If user already has a clinic, redirect to main dashboard
-        if (profile?.clinic_id) {
-          console.log('User already has clinic, redirecting to main dashboard');
-          navigate('/');
-          return;
-        }
-
+        setHasApprovedSubscription(!!manualPayment);
       } catch (error) {
-        console.error('Error checking approved payment:', error);
+        console.error('Error checking subscription:', error);
       } finally {
-        setLoading(false);
+        setCheckingSubscription(false);
       }
     };
 
-    checkApprovedPayment();
-  }, [user, profile, navigate]);
+    checkSubscriptionStatus();
+  }, [user, profile]);
 
-  const handleCreateClinic = async (e: React.FormEvent) => {
+  useEffect(() => {
+    if (profile?.clinic_id) {
+      navigate('/');
+    }
+  }, [profile, navigate]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !approvedPayment) return;
+    if (!user || !hasApprovedSubscription) return;
 
-    setCreatingClinic(true);
+    setLoading(true);
     try {
-      console.log('Creating clinic with data:', formData);
+      // Call the database function with the form data
+      const { error } = await supabase.rpc('create_clinic_and_link_profile', {
+        name_input: formData.name,
+        address_input: formData.address,
+        phone_input: formData.phone,
+        email_input: formData.email,
+        website_input: formData.website || null
+      });
 
-      // Create the clinic
-      const { data: clinic, error: clinicError } = await supabase
-        .from('clinics')
-        .insert({
-          name: formData.name,
-          address: formData.address,
-          phone: formData.phone,
-          email: formData.email,
-          website: formData.website || null,
-          subscription_status: 'active',
-          subscription_plan: getSubscriptionPlan(approvedPayment.amount_iqd),
-        })
-        .select()
-        .single();
+      if (error) throw error;
 
-      if (clinicError) throw clinicError;
-      console.log('Clinic created:', clinic);
-
-      // Update user profile with clinic_id
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({ 
-          clinic_id: clinic.id,
-          role: 'dentist'
-        })
-        .eq('user_id', user.id);
-
-      if (profileError) throw profileError;
-      console.log('Profile updated with clinic_id');
-
-      // Update the manual payment with clinic_id
-      await supabase
-        .from('manual_payments')
-        .update({ clinic_id: clinic.id })
-        .eq('id', approvedPayment.id);
-
-      // Create or update subscription record
-      const subscriptionData = {
-        clinic_id: clinic.id,
-        plan: getSubscriptionPlan(approvedPayment.amount_iqd) as 'basic' | 'premium' | 'enterprise',
-        status: 'approved' as 'approved',
-        amount_iqd: approvedPayment.amount_iqd,
-        amount_usd: Math.round(approvedPayment.amount_iqd / 1316),
-        payment_method: 'qi_card' as 'qi_card',
-        current_period_start: new Date().toISOString(),
-        current_period_end: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(), // 1 year from now
-      };
-
-      const { error: subscriptionError } = await supabase
-        .from('subscriptions')
-        .insert(subscriptionData);
-
-      if (subscriptionError) {
-        console.error('Error creating subscription:', subscriptionError);
-      }
-
+      // The function handled everything! Now just show success.
       toast({
         title: "تم إنشاء العيادة بنجاح",
         description: "تم إنشاء عيادتك وربطها بحسابك بنجاح",
       });
 
-      // Refresh profile to get updated clinic_id
+      // Refresh profile to get updated clinic_id in your app's state
       await refreshProfile();
       
       // Redirect to main dashboard
       navigate('/');
+
     } catch (error: any) {
       console.error('Error creating clinic:', error);
       toast({
@@ -157,23 +93,7 @@ const ApprovedDentistDashboard = () => {
         variant: "destructive",
       });
     } finally {
-      setCreatingClinic(false);
-    }
-  };
-
-  const getSubscriptionPlan = (amount: number): 'basic' | 'premium' | 'enterprise' => {
-    if (amount >= 30000) return 'enterprise';
-    if (amount >= 20000) return 'premium';
-    return 'basic';
-  };
-
-  const getPlanName = (amount: number) => {
-    const plan = getSubscriptionPlan(amount);
-    switch (plan) {
-      case 'enterprise': return 'خطة المؤسسة';
-      case 'premium': return 'الخطة المميزة';
-      case 'basic': return 'الخطة الأساسية';
-      default: return 'خطة غير محددة';
+      setLoading(false);
     }
   };
 
@@ -184,43 +104,43 @@ const ApprovedDentistDashboard = () => {
     }));
   };
 
-  if (loading) {
+  if (checkingSubscription) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
         <div className="flex items-center space-x-4">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-lg text-gray-600 dark:text-gray-300">جاري التحقق من حالة الدفع...</p>
+          <p className="text-lg text-gray-600 dark:text-gray-300">جاري التحقق من حالة الاشتراك...</p>
         </div>
       </div>
     );
   }
 
-  if (!approvedPayment) {
+  if (!hasApprovedSubscription) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-6">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <CreditCard className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+            <XCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
             <CardTitle className="text-xl text-gray-900 dark:text-white">
-              لا توجد دفعات مُعتمدة
+              اشتراك غير مُفعَّل
             </CardTitle>
             <CardDescription>
-              لم يتم العثور على أي دفعة مُعتمدة لحسابك
+              يجب أن يكون لديك اشتراك مُفعَّل لإنشاء عيادة
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <Alert>
                 <AlertDescription>
-                  يرجى التأكد من إتمام عملية الدفع والانتظار حتى موافقة المدير العام.
+                  لإنشاء عيادة، يجب أولاً الاشتراك في إحدى الخطط ثم انتظار موافقة المدير العام.
                 </AlertDescription>
               </Alert>
               <div className="flex flex-col space-y-2">
                 <Button onClick={() => navigate('/subscription')} className="w-full">
                   الذهاب لصفحة الاشتراكات
                 </Button>
-                <Button variant="outline" onClick={() => navigate('/auth')} className="w-full">
-                  تسجيل الخروج
+                <Button variant="outline" onClick={() => navigate('/')} className="w-full">
+                  العودة للصفحة الرئيسية
                 </Button>
               </div>
             </div>
@@ -231,151 +151,107 @@ const ApprovedDentistDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-6">
-      <div className="max-w-4xl mx-auto space-y-6">
-        {/* Welcome Header */}
-        <Card className="bg-gradient-to-l from-green-600 to-blue-600 text-white">
-          <CardHeader className="text-center">
-            <div className="flex items-center justify-center mb-4">
-              <CheckCircle className="h-12 w-12 text-green-200 ml-4" />
-              <User className="h-8 w-8 text-white" />
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-6">
+      <Card className="w-full max-w-2xl">
+        <CardHeader className="text-center">
+          <div className="flex items-center justify-center mb-4">
+            <CheckCircle className="h-8 w-8 text-green-500 ml-2" />
+            <Building2 className="h-12 w-12 text-primary" />
+          </div>
+          <CardTitle className="text-2xl text-gray-900 dark:text-white">
+            إنشاء عيادة جديدة
+          </CardTitle>
+          <CardDescription>
+            اشتراكك مُفعَّل! يمكنك الآن إنشاء عيادتك
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">اسم العيادة *</Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => handleInputChange('name', e.target.value)}
+                  placeholder="أدخل اسم العيادة"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="phone">رقم الهاتف *</Label>
+                <Input
+                  id="phone"
+                  value={formData.phone}
+                  onChange={(e) => handleInputChange('phone', e.target.value)}
+                  placeholder="أدخل رقم الهاتف"
+                  required
+                />
+              </div>
             </div>
-            <CardTitle className="text-2xl">
-              مرحباً {profile?.first_name}! تم قبول دفعتك
-            </CardTitle>
-            <CardDescription className="text-green-100">
-              تم اعتماد دفعتك من قبل الإدارة. يمكنك الآن إنشاء عيادتك والبدء في استخدام النظام.
-            </CardDescription>
-          </CardHeader>
-        </Card>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Payment Details */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CreditCard className="h-5 w-5" />
-                تفاصيل الدفعة المُعتمدة
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600 dark:text-gray-400">المبلغ:</span>
-                <span className="font-bold text-lg">{approvedPayment.amount_iqd.toLocaleString()} دينار عراقي</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600 dark:text-gray-400">الخطة:</span>
-                <Badge variant="secondary">{getPlanName(approvedPayment.amount_iqd)}</Badge>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600 dark:text-gray-400">طريقة الدفع:</span>
-                <span>{approvedPayment.payment_method}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600 dark:text-gray-400">حالة الدفع:</span>
-                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                  مُعتمد
-                </Badge>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600 dark:text-gray-400">تاريخ الدفع:</span>
-                <span>{new Date(approvedPayment.created_at).toLocaleDateString('ar-IQ')}</span>
-              </div>
-            </CardContent>
-          </Card>
+            <div className="space-y-2">
+              <Label htmlFor="email">البريد الإلكتروني</Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => handleInputChange('email', e.target.value)}
+                placeholder="أدخل البريد الإلكتروني"
+              />
+            </div>
 
-          {/* Clinic Creation Form */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Building2 className="h-5 w-5" />
-                إنشاء عيادتك
-              </CardTitle>
-              <CardDescription>
-                أدخل بيانات عيادتك لبدء استخدام النظام
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleCreateClinic} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">اسم العيادة *</Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => handleInputChange('name', e.target.value)}
-                    placeholder="أدخل اسم العيادة"
-                    required
-                  />
-                </div>
+            <div className="space-y-2">
+              <Label htmlFor="address">العنوان *</Label>
+              <Textarea
+                id="address"
+                value={formData.address}
+                onChange={(e) => handleInputChange('address', e.target.value)}
+                placeholder="أدخل عنوان العيادة"
+                required
+                rows={3}
+              />
+            </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="phone">رقم الهاتف *</Label>
-                  <Input
-                    id="phone"
-                    value={formData.phone}
-                    onChange={(e) => handleInputChange('phone', e.target.value)}
-                    placeholder="أدخل رقم الهاتف"
-                    required
-                  />
-                </div>
+            <div className="space-y-2">
+              <Label htmlFor="website">الموقع الإلكتروني (اختياري)</Label>
+              <Input
+                id="website"
+                value={formData.website}
+                onChange={(e) => handleInputChange('website', e.target.value)}
+                placeholder="https://example.com"
+              />
+            </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="email">البريد الإلكتروني</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                    placeholder="أدخل البريد الإلكتروني"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="address">العنوان *</Label>
-                  <Textarea
-                    id="address"
-                    value={formData.address}
-                    onChange={(e) => handleInputChange('address', e.target.value)}
-                    placeholder="أدخل عنوان العيادة"
-                    required
-                    rows={3}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="website">الموقع الإلكتروني (اختياري)</Label>
-                  <Input
-                    id="website"
-                    value={formData.website}
-                    onChange={(e) => handleInputChange('website', e.target.value)}
-                    placeholder="https://example.com"
-                  />
-                </div>
-
-                <Button
-                  type="submit"
-                  disabled={creatingClinic || !formData.name || !formData.phone || !formData.address}
-                  className="w-full"
-                >
-                  {creatingClinic ? (
-                    <>
-                      <Loader2 className="ml-2 h-4 w-4 animate-spin" />
-                      جاري إنشاء العيادة...
-                    </>
-                  ) : (
-                    <>
-                      <Building2 className="ml-2 h-4 w-4" />
-                      إنشاء العيادة والبدء
-                    </>
-                  )}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+            <div className="flex flex-col space-y-4 pt-4">
+              <Button
+                type="submit"
+                disabled={loading || !formData.name || !formData.phone || !formData.address}
+                className="w-full"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+                    جاري إنشاء العيادة...
+                  </>
+                ) : (
+                  'إنشاء العيادة'
+                )}
+              </Button>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => navigate('/')}
+                className="w-full"
+              >
+                إلغاء
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 };
 
-export default ApprovedDentistDashboard;
+export default CreateClinic;
