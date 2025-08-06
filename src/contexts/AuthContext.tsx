@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -34,8 +34,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<any>(null);
   const { toast } = useToast();
   
-  // Prevent multiple simultaneous profile requests
-  const [isProfileFetching, setIsProfileFetching] = useState(false);
+  // Use ref to prevent circular dependencies
+  const isProfileFetchingRef = useRef(false);
 
   const refreshProfile = useCallback(async (currentUser?: any) => {
     const userToFetch = currentUser || user || session?.user;
@@ -48,22 +48,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
     
-    // Prevent multiple simultaneous requests
-    if (isProfileFetching) {
+    // Prevent multiple simultaneous requests using ref
+    if (isProfileFetchingRef.current) {
       console.log('Profile already being fetched, skipping');
       return;
     }
     
-    setIsProfileFetching(true);
+    isProfileFetchingRef.current = true;
     setProfileLoading(true);
     
     try {
       console.log('Fetching profile for user:', userToFetch.id);
-      const { data, error } = await supabase
+      
+      // Add timeout to prevent hanging requests
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Profile fetch timeout')), 10000)
+      );
+      
+      const fetchPromise = supabase
         .from("profiles")
         .select("*")
         .eq("user_id", userToFetch.id)
         .maybeSingle();
+      
+      const { data, error } = await Promise.race([fetchPromise, timeoutPromise]) as any;
       
       if (error) {
         console.error("Error fetching profile:", error);
@@ -77,9 +85,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setProfile(null);
     } finally {
       setProfileLoading(false);
-      setIsProfileFetching(false);
+      isProfileFetchingRef.current = false;
     }
-  }, [user, session?.user, isProfileFetching]); // Added proper dependencies
+  }, []); // Empty dependencies to prevent infinite loops
 
   useEffect(() => {
     let mounted = true;
