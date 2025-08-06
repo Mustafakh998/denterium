@@ -48,12 +48,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
     
-    // Prevent multiple simultaneous requests
-    if (isProfileFetching) {
-      console.log('Profile already being fetched, skipping');
-      return;
-    }
-    
+    // Don't check isProfileFetching here - it can prevent profile loading
     setIsProfileFetching(true);
     setProfileLoading(true);
     
@@ -79,7 +74,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setProfileLoading(false);
       setIsProfileFetching(false);
     }
-  }, [user, session?.user, isProfileFetching]);
+  }, [user, session?.user]); // Removed isProfileFetching from dependencies
 
   useEffect(() => {
     let mounted = true;
