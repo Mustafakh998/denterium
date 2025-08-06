@@ -116,10 +116,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>
-                    <Settings className="ml-2 h-4 w-4" />
-                    <span>الإعدادات</span>
-                  </DropdownMenuItem>
+                   <DropdownMenuItem onClick={() => navigate('/settings')}>
+                     <Settings className="ml-2 h-4 w-4" />
+                     <span>الإعدادات</span>
+                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={signOut}>
                     <LogOut className="ml-2 h-4 w-4" />
                     <span>تسجيل الخروج</span>

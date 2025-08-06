@@ -156,7 +156,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         if (supplierData) {
           // User is a supplier, redirect to supplier dashboard
-          window.location.href = '/supplier-dashboard';
+          // Use setTimeout to avoid blocking the auth flow
+          setTimeout(() => {
+            window.location.href = '/supplier-dashboard';
+          }, 100);
           return { error: null };
         }
       }
@@ -224,7 +227,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       
       // Force redirect to auth page
-      window.location.href = '/auth';
+      setTimeout(() => {
+        window.location.href = '/auth';
+      }, 100);
     } catch (error: any) {
       console.error("Sign out error:", error);
       toast({

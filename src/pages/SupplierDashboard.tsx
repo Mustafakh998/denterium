@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -42,6 +43,7 @@ interface DashboardStats {
 
 export default function SupplierDashboard() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [supplier, setSupplier] = useState<SupplierData | null>(null);
   const [stats, setStats] = useState<DashboardStats>({
     totalProducts: 0,
@@ -245,7 +247,7 @@ export default function SupplierDashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
-            <Button className="w-full" onClick={() => window.location.href = '/supplier-inventory'}>
+            <Button className="w-full" onClick={() => navigate('/supplier-inventory')}>
               <Package className="h-4 w-4 mr-2" />
               عرض المخزون
             </Button>
@@ -269,7 +271,7 @@ export default function SupplierDashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
-            <Button className="w-full" onClick={() => window.location.href = '/supplier-payments'}>
+            <Button className="w-full" onClick={() => navigate('/supplier-payments')}>
               <TrendingUp className="h-4 w-4 mr-2" />
               عرض المدفوعات
             </Button>
@@ -288,7 +290,7 @@ export default function SupplierDashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
-            <Button className="w-full" onClick={() => window.location.href = '/supplier-orders'}>
+            <Button className="w-full" onClick={() => navigate('/supplier-orders')}>
               <Eye className="h-4 w-4 mr-2" />
               عرض الطلبات
             </Button>
@@ -307,7 +309,7 @@ export default function SupplierDashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
-            <Button className="w-full" onClick={() => window.location.href = '/supplier-settings'}>
+            <Button className="w-full" onClick={() => navigate('/supplier-settings')}>
               <Edit className="h-4 w-4 mr-2" />
               إعدادات الدفع
             </Button>

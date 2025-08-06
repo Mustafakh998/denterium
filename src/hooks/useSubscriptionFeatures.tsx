@@ -58,7 +58,7 @@ export const useSubscriptionFeatures = () => {
           const { data: manualPayment } = await supabase
             .from('manual_payments')
             .select('*')
-            .eq('user_id', profile.user_id)
+            .eq('user_id', profile?.user_id)
             .eq('status', 'approved')
             .maybeSingle();
             

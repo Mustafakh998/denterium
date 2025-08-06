@@ -19,4 +19,8 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  future: {
+    v7_startTransition: true,
+    v7_relativeSplatPath: true,
+  },
 }));
