@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { getSignedImageUrl } from "@/utils/imageHelpers";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -85,61 +86,14 @@ export default function MedicalImages() {
       if (error) throw error;
 
       const formattedImages = await Promise.all(data?.map(async (image: any) => {
-        // Generate signed URLs for private storage images
-        let signedImageUrl = image.image_url;
-        let signedThumbnailUrl = image.thumbnail_url;
-
-        // Extract file path from full URL if it's a full URL
-        const extractFilePath = (url: string) => {
-          if (url?.includes('/storage/v1/object/')) {
-            // Extract path after bucket name
-            const parts = url.split('/storage/v1/object/public/medical-images/');
-            if (parts.length > 1) {
-              return parts[1];
-            }
-            // Try other format
-            const parts2 = url.split('/medical-images/');
-            if (parts2.length > 1) {
-              return parts2[1];
-            }
-          }
-          return url;
-        };
-
-        try {
-          if (image.image_url && image.image_url.includes('storage/v1/object/')) {
-            const filePath = extractFilePath(image.image_url);
-            const { data: imageUrlData, error: imageError } = await supabase.storage
-              .from('medical-images')
-              .createSignedUrl(filePath, 3600); // 1 hour expiry
-            
-            if (!imageError && imageUrlData?.signedUrl) {
-              signedImageUrl = imageUrlData.signedUrl;
-            } else {
-              console.error('Error creating signed URL for image:', imageError);
-            }
-          }
-
-          if (image.thumbnail_url && image.thumbnail_url.includes('storage/v1/object/')) {
-            const filePath = extractFilePath(image.thumbnail_url);
-            const { data: thumbnailUrlData, error: thumbnailError } = await supabase.storage
-              .from('medical-images')
-              .createSignedUrl(filePath, 3600);
-            
-            if (!thumbnailError && thumbnailUrlData?.signedUrl) {
-              signedThumbnailUrl = thumbnailUrlData.signedUrl;
-            } else {
-              console.error('Error creating signed URL for thumbnail:', thumbnailError);
-            }
-          }
-        } catch (error) {
-          console.error('Error processing image URLs:', error);
-        }
+        // Generate signed URLs using the helper function
+        const signedImageUrl = await getSignedImageUrl(image.image_url);
+        const signedThumbnailUrl = await getSignedImageUrl(image.thumbnail_url);
 
         return {
           ...image,
-          image_url: signedImageUrl,
-          thumbnail_url: signedThumbnailUrl,
+          image_url: signedImageUrl || image.image_url,
+          thumbnail_url: signedThumbnailUrl || image.thumbnail_url,
           patient_first_name: image.patients?.first_name || "",
           patient_last_name: image.patients?.last_name || "",
           patient_avatar_url: image.patients?.avatar_url || "",

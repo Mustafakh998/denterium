@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { getSignedImageUrl } from "@/utils/imageHelpers";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -104,37 +105,8 @@ export default function ImageDetails({ image }: ImageDetailsProps) {
   const handleDownload = async () => {
     if (image.image_url) {
       try {
-        let downloadUrl = image.image_url;
+        const downloadUrl = await getSignedImageUrl(image.image_url) || image.image_url;
         
-        // Extract file path if it's a full storage URL
-        const extractFilePath = (url: string) => {
-          if (url?.includes('/storage/v1/object/')) {
-            const parts = url.split('/storage/v1/object/public/medical-images/');
-            if (parts.length > 1) {
-              return parts[1];
-            }
-            const parts2 = url.split('/medical-images/');
-            if (parts2.length > 1) {
-              return parts2[1];
-            }
-          }
-          return url;
-        };
-
-        // If it's a storage URL, create a signed URL for download
-        if (image.image_url.includes('storage/v1/object/')) {
-          const filePath = extractFilePath(image.image_url);
-          const { data, error } = await supabase.storage
-            .from('medical-images')
-            .createSignedUrl(filePath, 60); // 1 minute for download
-            
-          if (error) {
-            console.error('Error creating download URL:', error);
-            return;
-          }
-          downloadUrl = data?.signedUrl || image.image_url;
-        }
-
         const link = document.createElement('a');
         link.href = downloadUrl;
         link.download = image.title || 'medical-image';

@@ -136,7 +136,8 @@ export default function AddImageForm({ onSuccess }: AddImageFormProps) {
         throw new Error('فشل في رفع الصورة: ' + uploadError.message);
       }
 
-      // Store the file path, we'll generate signed URLs when displaying
+      // Store only the relative file path - signed URLs will be generated when displaying
+      console.log('Upload successful, returning path:', filePath);
       return filePath;
     } catch (error) {
       console.error("Error uploading image:", error);
