@@ -59,12 +59,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { icon: Heart, label: "التواصل", href: "/communication" },
     { icon: ShieldCheck, label: "الموردين", href: "/suppliers" },
     { icon: CreditCard, label: "الاشتراك", href: "/subscription" },
-    ...(profile?.system_role === 'super_admin' ? [
-      { icon: ShieldCheck, label: "إدارة المدفوعات", href: "/admin/payments" },
-      { icon: UserCheck, label: "إدارة المستخدمين", href: "/admin/users" },
-      { icon: ShieldCheck, label: "لوحة المدير العام", href: "/super-admin" },
-      { icon: ShieldCheck, label: "إدارة الاشتراكات", href: "/admin/subscriptions" }
-    ] : []),
     { icon: Settings, label: "الإعدادات", href: "/settings" },
   ];
 
@@ -84,7 +78,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             <div className="flex items-center space-x-reverse space-x-4">
               <Badge variant="outline" className="capitalize">
                 {profileLoading ? "جاري التحميل..." :
-                 profile?.system_role === 'super_admin' ? 'مدير عام' :
                  profile?.role === 'dentist' ? 'طبيب أسنان' :
                  profile?.role === 'assistant' ? 'مساعد' :
                  profile?.role === 'receptionist' ? 'موظف استقبال' :

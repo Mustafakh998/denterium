@@ -18,9 +18,6 @@ import Staff from "./pages/Staff";
 import Reports from "./pages/Reports";
 import Features from "./pages/Features";
 import Subscription from "./pages/Subscription";
-import AdminPayments from "./pages/AdminPayments";
-import AdminUsers from "./pages/AdminUsers";
-import SuperAdminDashboard from "./pages/SuperAdminDashboard";
 import Communication from "./pages/Communication";
 import Inventory from "./pages/Inventory";
 import Backup from "./pages/Backup";
@@ -33,8 +30,9 @@ import PendingPayments from "./components/supplier/PendingPayments";
 import PaymentSettings from "./components/supplier/PaymentSettings";
 import CreateClinic from "./pages/CreateClinic";
 import CreateSuperAdmin from "./pages/CreateSuperAdmin";
-import SuperAdminSubscriptions from "./pages/SuperAdminSubscriptions";
 import DevTools from "./pages/DevTools";
+import SuperAdminAuth from "./pages/SuperAdminAuth";
+import SuperAdminManagement from "./pages/SuperAdminManagement";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -66,9 +64,6 @@ const App = () => (
             <Route path="/reports" element={<Reports />} />
             <Route path="/features" element={<Features />} />
             <Route path="/subscription" element={<Subscription />} />
-            <Route path="/admin/payments" element={<AdminPayments />} />
-            <Route path="/admin/users" element={<AdminUsers />} />
-            <Route path="/super-admin" element={<SuperAdminDashboard />} />
             <Route path="/communication" element={<Communication />} />
             <Route path="/inventory" element={<Inventory />} />
             <Route path="/backup" element={<Backup />} />
@@ -81,8 +76,9 @@ const App = () => (
            <Route path="/suppliers" element={<Suppliers />} />
             <Route path="/create-clinic" element={<CreateClinic />} />
             <Route path="/create-super-admin" element={<CreateSuperAdmin />} />
-            <Route path="/admin/subscriptions" element={<SuperAdminSubscriptions />} />
             <Route path="/dev-tools" element={<DevTools />} />
+            <Route path="/super-admin-auth" element={<SuperAdminAuth />} />
+            <Route path="/super-admin-dashboard" element={<SuperAdminManagement />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

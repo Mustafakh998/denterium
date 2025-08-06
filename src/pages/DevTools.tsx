@@ -41,12 +41,12 @@ export default function DevTools() {
             </Button>
             
             <Button
-              onClick={() => navigate('/')}
+              onClick={() => navigate('/super-admin-auth')}
               variant="outline"
               className="h-20 flex flex-col gap-2"
             >
-              <Database className="h-6 w-6" />
-              لوحة التحكم
+              <Shield className="h-6 w-6" />
+              تسجيل دخول المدير العام
             </Button>
             
             <div className="h-20 flex flex-col justify-center text-center text-sm text-muted-foreground border border-dashed rounded-lg">
