@@ -43,23 +43,48 @@ export default function SuperAdminPayments() {
   const { data: payments = [], refetch } = useQuery({
     queryKey: ['super-admin-payments'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First get all manual payments
+      const { data: paymentsData, error: paymentsError } = await supabase
         .from('manual_payments')
-        .select(`
-          *,
-          clinics (
-            name
-          ),
-          profiles (
-            first_name,
-            last_name,
-            email
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      return data as any;
+      if (paymentsError) throw paymentsError;
+
+      // Then get user profiles and clinics separately
+      const userIds = paymentsData?.map(p => p.user_id).filter(Boolean) || [];
+      const clinicIds = paymentsData?.map(p => p.clinic_id).filter(Boolean) || [];
+
+      const [profilesResult, clinicsResult] = await Promise.all([
+        userIds.length > 0 ? supabase
+          .from('profiles')
+          .select('user_id, first_name, last_name, email')
+          .in('user_id', userIds) : { data: [], error: null },
+        clinicIds.length > 0 ? supabase
+          .from('clinics')
+          .select('id, name')
+          .in('id', clinicIds) : { data: [], error: null }
+      ]);
+
+      // Map the data together
+      const enrichedPayments = paymentsData?.map(payment => {
+        const profile = profilesResult.data?.find(p => p.user_id === payment.user_id);
+        const clinic = clinicsResult.data?.find(c => c.id === payment.clinic_id);
+        
+        return {
+          ...payment,
+          profiles: profile ? {
+            first_name: profile.first_name,
+            last_name: profile.last_name,
+            email: profile.email
+          } : null,
+          clinics: clinic ? {
+            name: clinic.name
+          } : null
+        };
+      }) || [];
+
+      return enrichedPayments;
     }
   });
 
