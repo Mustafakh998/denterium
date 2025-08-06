@@ -63,7 +63,7 @@ const CreateClinic = () => {
     setLoading(true);
     try {
       // Call the database function with the form data
-      const { error } = await supabase.rpc('create_clinic_and_link_profile', {
+      const { error } = await supabase.rpc('create_clinic_and_link_profile' as any, {
         name_input: formData.name,
         address_input: formData.address,
         phone_input: formData.phone,
