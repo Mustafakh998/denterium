@@ -44,7 +44,14 @@ import SuperAdminUserCleanup from "./pages/superadmin/SuperAdminUserCleanup";
 import ApprovedDentistDashboard from "./pages/ApprovedDentistDashboard";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const App = () => (
   <ErrorBoundary>

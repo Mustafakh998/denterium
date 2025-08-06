@@ -39,16 +39,27 @@ const ApprovedDentistDashboard = () => {
   });
 
   useEffect(() => {
+    let mounted = true;
+    let timeoutId: NodeJS.Timeout;
+    
     const checkApprovedPayment = async () => {
-      if (!user) return;
+      if (!user) {
+        console.log('No user found');
+        if (mounted) setLoading(false);
+        return;
+      }
 
       try {
+        console.log('Checking approved payment for user:', user.id);
+        console.log('Current profile:', profile);
+        
         if (profile?.clinic_id) {
+          console.log('User has clinic, redirecting to dashboard');
           navigate('/');
           return;
         }
         
-        const { data: payment } = await supabase
+        const { data: payment, error } = await supabase
           .from('manual_payments')
           .select('*')
           .eq('user_id', user.id)
@@ -57,17 +68,46 @@ const ApprovedDentistDashboard = () => {
           .limit(1)
           .maybeSingle();
 
-        setApprovedPayment(payment);
+        if (error) {
+          console.error('Error fetching payment:', error);
+        } else {
+          console.log('Payment data:', payment);
+        }
+
+        if (mounted) {
+          setApprovedPayment(payment);
+        }
 
       } catch (error) {
         console.error('Error checking approved payment:', error);
       } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
 
-    checkApprovedPayment();
-  }, [user, profile, navigate]);
+    // Add timeout to prevent infinite loading
+    timeoutId = setTimeout(() => {
+      if (mounted && loading) {
+        console.log('Timeout reached, stopping loading');
+        setLoading(false);
+      }
+    }, 10000); // 10 second timeout
+
+    // Add delay to ensure user and profile are properly loaded
+    const timer = setTimeout(() => {
+      if (mounted) {
+        checkApprovedPayment();
+      }
+    }, 100);
+
+    return () => {
+      mounted = false;
+      clearTimeout(timer);
+      clearTimeout(timeoutId);
+    };
+  }, [user?.id, profile?.clinic_id, navigate, loading]); // Added loading to dependencies
 
   const handleCreateClinic = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -134,9 +174,21 @@ const ApprovedDentistDashboard = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
-        <div className="flex items-center space-x-4">
+        <div className="flex flex-col items-center space-y-4">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
           <p className="text-lg text-gray-600 dark:text-gray-300">جاري التحقق من حالة الدفع...</p>
+          <p className="text-sm text-gray-500">قد تستغرق هذه العملية بضع ثوانِ</p>
+          {/* Add timeout fallback */}
+          <Button 
+            variant="ghost" 
+            onClick={() => {
+              setLoading(false);
+              navigate('/auth');
+            }}
+            className="mt-4 text-xs"
+          >
+            إذا استغرقت العملية وقتاً طويلاً، انقر هنا
+          </Button>
         </div>
       </div>
     );
