@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import MedicalImageEditor from "./MedicalImageEditor";
 import { 
   Calendar, 
   Download, 
@@ -12,7 +14,10 @@ import {
   User, 
   Image as ImageIcon,
   Info,
-  Tag
+  Tag,
+  Edit,
+  Eye,
+  ZoomIn
 } from "lucide-react";
 
 interface MedicalImage {
@@ -41,6 +46,8 @@ interface ImageDetailsProps {
 }
 
 export default function ImageDetails({ image }: ImageDetailsProps) {
+  const [showEditor, setShowEditor] = useState(false);
+  const [showFullImage, setShowFullImage] = useState(false);
   const getTypeColor = (type: string) => {
     switch (type) {
       case "xray":
@@ -114,10 +121,28 @@ export default function ImageDetails({ image }: ImageDetailsProps) {
             {getTypeText(image.image_type)}
           </Badge>
         </div>
-        <Button onClick={handleDownload} variant="outline" size="sm">
-          <Download className="ml-2 h-4 w-4" />
-          تحميل
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            onClick={() => setShowFullImage(true)} 
+            variant="outline" 
+            size="sm"
+          >
+            <Eye className="ml-2 h-4 w-4" />
+            عرض
+          </Button>
+          <Button 
+            onClick={() => setShowEditor(true)} 
+            variant="outline" 
+            size="sm"
+          >
+            <Edit className="ml-2 h-4 w-4" />
+            تحرير
+          </Button>
+          <Button onClick={handleDownload} variant="outline" size="sm">
+            <Download className="ml-2 h-4 w-4" />
+            تحميل
+          </Button>
+        </div>
       </div>
 
       <Separator />
@@ -127,11 +152,17 @@ export default function ImageDetails({ image }: ImageDetailsProps) {
         <CardContent className="p-6">
           <div className="flex justify-center">
             {image.image_url ? (
-              <img
-                src={image.image_url}
-                alt={image.title || "صورة طبية"}
-                className="max-w-full max-h-96 object-contain rounded-lg border"
-              />
+              <div className="relative group">
+                <img
+                  src={image.image_url}
+                  alt={image.title || "صورة طبية"}
+                  className="max-w-full max-h-96 object-contain rounded-lg border cursor-pointer hover:shadow-lg transition-shadow"
+                  onClick={() => setShowFullImage(true)}
+                />
+                <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-20 transition-all duration-200 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100">
+                  <ZoomIn className="h-8 w-8 text-white" />
+                </div>
+              </div>
             ) : (
               <div className="w-full h-64 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
                 <ImageIcon className="h-16 w-16 text-gray-400" />
@@ -263,6 +294,43 @@ export default function ImageDetails({ image }: ImageDetailsProps) {
           </CardContent>
         </Card>
       )}
+
+      {/* Image Editor Dialog */}
+      <Dialog open={showEditor} onOpenChange={setShowEditor}>
+        <DialogContent className="max-w-screen-xl max-h-screen-xl h-[90vh] w-[95vw]">
+          <DialogHeader>
+            <DialogTitle>محرر الصور الطبية - {image.title || "صورة طبية"}</DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-hidden">
+            <MedicalImageEditor
+              imageUrl={image.image_url}
+              imageName={image.title}
+              onClose={() => setShowEditor(false)}
+              onSave={(blob) => {
+                // TODO: Implement save functionality
+                console.log("Saving edited image:", blob);
+                setShowEditor(false);
+              }}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Full Size Image Dialog */}
+      <Dialog open={showFullImage} onOpenChange={setShowFullImage}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto">
+          <DialogHeader>
+            <DialogTitle>{image.title || "صورة طبية"}</DialogTitle>
+          </DialogHeader>
+          <div className="flex justify-center">
+            <img
+              src={image.image_url}
+              alt={image.title || "صورة طبية"}
+              className="max-w-full h-auto rounded-lg"
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

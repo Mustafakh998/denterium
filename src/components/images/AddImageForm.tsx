@@ -122,7 +122,7 @@ export default function AddImageForm({ onSuccess }: AddImageFormProps) {
     try {
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}.${fileExt}`;
-      const filePath = `medical-images/${profile?.clinic_id}/${fileName}`;
+      const filePath = `${profile?.clinic_id}/${fileName}`;
 
       // Upload to Supabase Storage
       const { error: uploadError } = await supabase.storage
