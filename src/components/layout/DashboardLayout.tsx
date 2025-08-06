@@ -39,6 +39,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const navigate = useNavigate();
   const location = useLocation();
 
+  console.log("DashboardLayout - Profile:", profile, "Loading:", profileLoading);
+
   const handleRefreshProfile = async () => {
     await refreshProfile();
   };
