@@ -317,16 +317,13 @@ export default function Auth() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="role">المنصب</Label>
+                  <Label htmlFor="role">نوع الحساب</Label>
                   <Select value={role} onValueChange={setRole}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="dentist">طبيب أسنان</SelectItem>
-                      <SelectItem value="assistant">مساعد طبيب أسنان</SelectItem>
-                      <SelectItem value="receptionist">موظف استقبال</SelectItem>
-                      <SelectItem value="admin">مدير</SelectItem>
                       <SelectItem value="supplier">مكتب مستلزمات</SelectItem>
                     </SelectContent>
                   </Select>
