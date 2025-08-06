@@ -62,7 +62,7 @@ export default function Index() {
     return <Navigate to="/supplier-dashboard" replace />;
   }
   
-  // Check if user needs to create a clinic
+  // Check if user needs to create a clinic (but first check if they have approved subscription)
   if (user && profile && !profile.clinic_id) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-6">

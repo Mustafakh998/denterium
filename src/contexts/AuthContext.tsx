@@ -40,13 +40,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const refreshProfile = useCallback(async () => {
     const currentUser = user || session?.user;
     
+    console.log('refreshProfile called with user:', currentUser?.id, 'isProfileFetching:', isProfileFetching);
+    
     if (!currentUser) {
+      console.log('No current user, setting profileLoading to false');
       setProfileLoading(false);
       return;
     }
     
     // Prevent multiple simultaneous requests
     if (isProfileFetching) {
+      console.log('Profile already being fetched, skipping');
       return;
     }
     
@@ -54,6 +58,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setProfileLoading(true);
     
     try {
+      console.log('Fetching profile for user:', currentUser.id);
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
@@ -64,6 +69,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.error("Error fetching profile:", error);
         setProfile(null);
       } else {
+        console.log('Profile fetched successfully:', data);
         setProfile(data);
       }
     } catch (error) {

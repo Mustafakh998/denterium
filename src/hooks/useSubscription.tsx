@@ -97,6 +97,49 @@ export const useSubscription = () => {
     fetchSubscription();
   }, [profile]);
 
+  // Set up real-time subscription for payment status changes
+  useEffect(() => {
+    if (!profile?.user_id) return;
+
+    const channel = supabase
+      .channel('subscription-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'manual_payments',
+          filter: `user_id=eq.${profile.user_id}`
+        },
+        (payload) => {
+          console.log('Manual payment updated:', payload);
+          // Refetch subscription when payment status changes
+          fetchSubscription();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'subscriptions'
+        },
+        (payload) => {
+          console.log('Subscription updated:', payload);
+          // Check if this subscription affects current user
+          const newData = payload.new as any;
+          if (newData?.clinic_id === profile.clinic_id) {
+            fetchSubscription();
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [profile?.user_id, profile?.clinic_id, fetchSubscription]);
+
   return {
     subscription,
     loading,
