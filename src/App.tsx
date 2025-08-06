@@ -33,6 +33,8 @@ import CreateSuperAdmin from "./pages/CreateSuperAdmin";
 import DevTools from "./pages/DevTools";
 import SuperAdminAuth from "./pages/SuperAdminAuth";
 import SuperAdminManagement from "./pages/SuperAdminManagement";
+import SuperAdminUsers from "./pages/superadmin/SuperAdminUsers";
+import SuperAdminPayments from "./pages/superadmin/SuperAdminPayments";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -79,6 +81,8 @@ const App = () => (
             <Route path="/dev-tools" element={<DevTools />} />
             <Route path="/super-admin-auth" element={<SuperAdminAuth />} />
             <Route path="/super-admin-dashboard" element={<SuperAdminManagement />} />
+            <Route path="/super-admin/users" element={<SuperAdminUsers />} />
+            <Route path="/super-admin/payments" element={<SuperAdminPayments />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
