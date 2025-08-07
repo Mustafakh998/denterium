@@ -62,8 +62,11 @@ export const AIAnalysisPanel: React.FC<AIAnalysisPanelProps> = ({
       setAnalysisProgress(100);
 
       if (error) throw error;
+      if (!data || data.success === false) {
+        throw new Error((data as any)?.details || 'Analysis failed');
+      }
 
-      setAnalysisResults(data);
+      setAnalysisResults(data as any);
       onAnalysisComplete?.(data);
       
       toast.success('AI analysis completed successfully!');

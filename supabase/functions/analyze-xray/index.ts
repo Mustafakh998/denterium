@@ -21,19 +21,38 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    // Fetch the image from Supabase storage
-    const { data: imageData, error: downloadError } = await supabase.storage
-      .from('medical-images')
-      .download(imageUrl.replace('medical-images/', ''))
+    // Fetch the image data (supports both storage paths and signed URLs)
+    let arrayBuffer: ArrayBuffer;
 
-    if (downloadError) {
-      console.error('Error downloading image:', downloadError)
-      throw new Error('Failed to download image for analysis')
+    if (typeof imageUrl === 'string' && imageUrl.startsWith('http')) {
+      // Signed URL or external URL - fetch directly
+      const response = await fetch(imageUrl);
+      if (!response.ok) {
+        console.error('Error fetching signed URL image:', await response.text());
+        throw new Error('Failed to fetch image from signed URL');
+      }
+      arrayBuffer = await response.arrayBuffer();
+    } else {
+      // Storage path relative to bucket
+      let path = imageUrl as string;
+      // Allow both with and without bucket prefix
+      if (path.startsWith('medical-images/')) {
+        path = path.replace('medical-images/', '');
+      }
+
+      const { data: imageData, error: downloadError } = await supabase.storage
+        .from('medical-images')
+        .download(path);
+
+      if (downloadError || !imageData) {
+        console.error('Error downloading image:', downloadError);
+        throw new Error('Failed to download image for analysis');
+      }
+      arrayBuffer = await imageData.arrayBuffer();
     }
 
     // Convert blob to base64 for processing
-    const arrayBuffer = await imageData.arrayBuffer()
-    const base64Image = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)))
+    const base64Image = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
 
     // Simulate AI analysis (in real implementation, this would use actual AI models)
     const analysisResults = await performXrayAnalysis(base64Image, imageType, analysisType)
