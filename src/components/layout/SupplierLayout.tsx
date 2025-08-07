@@ -60,6 +60,9 @@ export default function SupplierLayout({ children }: SupplierLayoutProps) {
               <h1 className="text-xl font-bold text-gray-900 dark:text-white">
                 بوابة الموردين
               </h1>
+              <Button variant="outline" size="sm" onClick={() => navigate('/supplier-dashboard')}>
+                العودة للوحة المورد
+              </Button>
             </div>
             
             <div className="flex items-center space-x-4">

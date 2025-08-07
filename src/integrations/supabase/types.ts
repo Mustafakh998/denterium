@@ -716,6 +716,7 @@ export type Database = {
           status: Database["public"]["Enums"]["payment_status"]
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
+          supplier_id: string | null
           trial_end: string | null
           updated_at: string
         }
@@ -732,6 +733,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["payment_status"]
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
+          supplier_id?: string | null
           trial_end?: string | null
           updated_at?: string
         }
@@ -748,6 +750,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["payment_status"]
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
+          supplier_id?: string | null
           trial_end?: string | null
           updated_at?: string
         }

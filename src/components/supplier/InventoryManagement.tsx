@@ -20,6 +20,7 @@ import { useToast } from '@/hooks/use-toast';
 import AddProductForm from './AddProductForm';
 import ProductDetails from './ProductDetails';
 import EditProductForm from './EditProductForm';
+import { useNavigate } from 'react-router-dom';
 
 interface Product {
   id: string;
@@ -47,6 +48,7 @@ interface Product {
 export default function InventoryManagement() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -130,7 +132,10 @@ export default function InventoryManagement() {
           <h2 className="text-2xl font-bold">إدارة المخزون</h2>
           <p className="text-muted-foreground">مراقبة مخزون منتجاتك ومستويات المخزون</p>
         </div>
-        <AddProductForm onProductAdded={fetchProducts} />
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => navigate('/supplier-dashboard')}>العودة للوحة المورد</Button>
+          <AddProductForm onProductAdded={fetchProducts} />
+        </div>
       </div>
 
       {/* Alerts */}

@@ -101,6 +101,19 @@ serve(async (req) => {
 
     logStep('User profile retrieved', { clinicId: profile?.clinic_id || 'No clinic yet' })
 
+    // Try to get supplier for this user (for supplier subscriptions)
+    const { data: supplier, error: supplierError } = await supabase
+      .from('suppliers')
+      .select('id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (supplierError) {
+      logStep('Failed to get supplier record (continuing without supplier)', supplierError);
+    } else {
+      logStep('Supplier record check', { supplierId: supplier?.id || 'no supplier' });
+    }
+
     // Step 1: Get OAuth token from FIB
     logStep('Getting OAuth token from FIB')
     
@@ -171,6 +184,7 @@ serve(async (req) => {
     // Step 3: Store pending subscription in database
     const subscriptionData = {
       clinic_id: profile?.clinic_id, // Allow null for new users
+      supplier_id: supplier?.id || null,
       plan: plan,
       amount_usd: Math.round(parseInt(amount) / 1316), // Convert IQD to USD roughly
       amount_iqd: parseInt(amount),

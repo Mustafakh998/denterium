@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/dialog';
 import { Plus, Save, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { ensureSupplierExists } from '@/utils/supplier';
 
 interface AddProductFormProps {
   onProductAdded?: () => void;
@@ -87,20 +88,15 @@ export default function AddProductForm({ onProductAdded, trigger }: AddProductFo
     try {
       setSaving(true);
 
-      // Get supplier ID
-      const { data: supplierData } = await supabase
-        .from('suppliers')
-        .select('id')
-        .eq('user_id', user?.id)
-        .maybeSingle();
-
-      if (!supplierData) {
-        throw new Error('Supplier profile not found');
+      // Ensure supplier exists and get ID
+      const supplierId = await ensureSupplierExists(supabase, user);
+      if (!supplierId) {
+        throw new Error('Supplier profile could not be created');
       }
 
       // Prepare data for insertion
       const productData = {
-        supplier_id: supplierData.id,
+        supplier_id: supplierId,
         name: formData.name,
         description: formData.description || null,
         brand: formData.brand || null,

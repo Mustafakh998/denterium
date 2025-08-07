@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import AddProductForm from '@/components/supplier/AddProductForm';
 import SupplierLayout from '@/components/layout/SupplierLayout';
+import { FibPaymentDialog } from '@/components/billing/FibPaymentDialog';
 
 interface SupplierData {
   id: string;
@@ -55,11 +56,13 @@ export default function SupplierDashboard() {
     averageRating: 0
   });
   const [loading, setLoading] = useState(true);
+  const [currentPlan, setCurrentPlan] = useState<'basic' | 'premium' | 'enterprise' | null>(null);
 
   useEffect(() => {
     if (user) {
       fetchSupplierData();
       fetchDashboardStats();
+      fetchSubscription();
     }
   }, [user]);
 
@@ -83,7 +86,7 @@ export default function SupplierDashboard() {
       // Get supplier ID first
       const { data: supplierData } = await supabase
         .from('suppliers')
-        .select('id')
+        .select('id, rating')
         .eq('user_id', user?.id)
         .maybeSingle();
 
@@ -121,12 +124,35 @@ export default function SupplierDashboard() {
         totalOrders,
         pendingOrders,
         totalRevenue,
-        averageRating: supplier?.rating || 0
+        averageRating: supplierData?.rating || 0
       });
     } catch (error) {
       console.error('Error fetching dashboard stats:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchSubscription = async () => {
+    try {
+      const { data: supplierData } = await supabase
+        .from('suppliers')
+        .select('id')
+        .eq('user_id', user?.id)
+        .maybeSingle();
+      if (!supplierData) return;
+
+      const { data } = await supabase
+        .from('subscriptions')
+        .select('plan, status')
+        .eq('supplier_id', supplierData.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (data?.plan && data?.status === 'approved') setCurrentPlan(data.plan as any);
+    } catch (e) {
+      console.error('Error fetching subscription', e);
     }
   };
 
@@ -320,6 +346,51 @@ export default function SupplierDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Subscription Plans */}
+      <Card>
+        <CardHeader>
+          <CardTitle>اشتراك المورد</CardTitle>
+          <CardDescription>اختر خطة الاشتراك الشهرية المناسبة</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[
+              { id: 'basic', name: 'أساسي', price: 20000 },
+              { id: 'premium', name: 'ممتاز', price: 40000 },
+              { id: 'enterprise', name: 'مؤسسات', price: 60000 },
+            ].map((tier) => {
+              const priceMap: any = { basic: 20000, premium: 40000, enterprise: 60000 };
+              const current = currentPlan ? priceMap[currentPlan] : 0;
+              const finalPrice = currentPlan ? Math.max(0, tier.price - current) : tier.price;
+              const disabled = currentPlan ? priceMap[currentPlan] >= tier.price : false;
+              return (
+                <div key={tier.id} className="p-4 border rounded-lg space-y-2">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-medium">{tier.name}</h4>
+                    {currentPlan === tier.id && (
+                      <Badge>خطة حالية</Badge>
+                    )}
+                  </div>
+                  <p className="text-sm text-muted-foreground">{finalPrice.toLocaleString()} د.ع / شهر</p>
+                  <FibPaymentDialog 
+                    planId={tier.id}
+                    planName={tier.name}
+                    price={finalPrice}
+                    isUpgrade={!!currentPlan}
+                  />
+                  {disabled && (
+                    <p className="text-xs text-muted-foreground">أنت على خطة أعلى أو مساوية</p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          <p className="text-xs text-muted-foreground mt-3">
+            يتم تفعيل الاشتراك بعد موافقة المشرف العام. للترقية، يتم دفع الفرق فقط.
+          </p>
+        </CardContent>
+      </Card>
 
       {/* Recent Activity */}
       <Card>

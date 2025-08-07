@@ -19,6 +19,7 @@ import {
   X
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { ensureSupplierExists } from '@/utils/supplier';
 
 interface PaymentAccount {
   id: string;
@@ -52,10 +53,12 @@ export default function PaymentSettings() {
 
   const fetchSupplierData = async () => {
     try {
+      const supplierId = await ensureSupplierExists(supabase, user);
+      if (!supplierId) return;
       const { data, error } = await supabase
         .from('suppliers')
         .select('*')
-        .eq('user_id', user?.id)
+        .eq('id', supplierId)
         .maybeSingle();
 
       if (error) throw error;
@@ -67,18 +70,13 @@ export default function PaymentSettings() {
 
   const fetchPaymentAccounts = async () => {
     try {
-      const { data: supplierData } = await supabase
-        .from('suppliers')
-        .select('id')
-        .eq('user_id', user?.id)
-        .maybeSingle();
-
-      if (!supplierData) return;
+      const supplierId = await ensureSupplierExists(supabase, user);
+      if (!supplierId) return;
 
       const { data, error } = await supabase
         .from('supplier_payment_accounts')
         .select('*')
-        .eq('supplier_id', supplierData.id)
+        .eq('supplier_id', supplierId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -108,18 +106,13 @@ export default function PaymentSettings() {
     try {
       setSaving(true);
 
-      const { data: supplierData } = await supabase
-        .from('suppliers')
-        .select('id')
-        .eq('user_id', user?.id)
-        .maybeSingle();
-
-      if (!supplierData) throw new Error('Supplier not found');
+      const supplierId = await ensureSupplierExists(supabase, user);
+      if (!supplierId) throw new Error('Supplier not found');
 
       const { error } = await supabase
         .from('supplier_payment_accounts')
         .insert({
-          supplier_id: supplierData.id,
+          supplier_id: supplierId,
           ...newAccount
         });
 
