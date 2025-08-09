@@ -170,8 +170,25 @@ export default function InvoiceDetails({ invoice }: InvoiceDetailsProps) {
     }
   };
 
-  const handlePrint = () => {
-    window.print();
+  const handlePrint = async () => {
+    try {
+      const { generateInvoicePDF } = await import('@/components/billing/InvoicePDF');
+      const { data: clinic, error: clinicError } = await supabase
+        .from('clinics')
+        .select('name, address, phone, email, logo_url')
+        .eq('id', (window as any).currentClinicId || 'current-clinic-id')
+        .single();
+      if (clinicError) throw clinicError;
+      const patient = {
+        first_name: invoice.patient_first_name,
+        last_name: invoice.patient_last_name,
+        phone: invoice.patient_phone
+      };
+      await generateInvoicePDF({ invoice, patient, clinic }, { action: 'print' });
+    } catch (e) {
+      console.error('Error printing invoice:', e);
+      window.print();
+    }
   };
 
   const handleSend = () => {

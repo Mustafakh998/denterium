@@ -60,7 +60,7 @@ const calculateRemainingBalance = (invoice: Invoice) => {
   return calculateNetAmount(invoice) - (invoice.paid_amount || 0);
 };
 
-export const generateInvoicePDF = async ({ invoice, patient, clinic }: InvoicePDFProps) => {
+export const generateInvoicePDF = async ({ invoice, patient, clinic }: InvoicePDFProps, options?: { action?: 'save' | 'print' }) => {
   // Create a temporary div for the invoice content
   const invoiceElement = document.createElement('div');
   invoiceElement.style.fontFamily = 'Arial, sans-serif';
@@ -193,9 +193,15 @@ export const generateInvoicePDF = async ({ invoice, patient, clinic }: InvoicePD
       heightLeft -= pdfHeight - 20;
     }
 
-    // Download the PDF
+    // Download or print the PDF
     const fileName = `invoice-${invoice.invoice_number || invoice.id.slice(0, 8)}.pdf`;
-    pdf.save(fileName);
+    if (options?.action === 'print') {
+      try { pdf.autoPrint && (pdf as any).autoPrint(); } catch {}
+      const url = pdf.output('bloburl');
+      window.open(url, '_blank');
+    } else {
+      pdf.save(fileName);
+    }
     
   } catch (error) {
     console.error('Error generating PDF:', error);

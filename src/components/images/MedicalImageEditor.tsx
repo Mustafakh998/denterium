@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
-import { Canvas as FabricCanvas, Circle, Rect, FabricText, PencilBrush, FabricImage } from "fabric";
+import { Canvas as FabricCanvas, Circle, Rect, FabricText, PencilBrush, FabricImage, Line } from "fabric";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
@@ -68,6 +68,11 @@ export default function MedicalImageEditor({ imageUrl, imageName, onSave, onClos
   // History for undo/redo
   const [history, setHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+
+  // Measurement settings
+  const [measurementMode, setMeasurementMode] = useState<'distance' | 'angle' | 'area'>('distance');
+  const [calibration, setCalibration] = useState<number>(1); // mm per pixel
+  const rulerHandlerRef = useRef<((opt: any) => void) | null>(null);
 
   // Load image and initialize canvas
   useEffect(() => {
@@ -158,7 +163,9 @@ export default function MedicalImageEditor({ imageUrl, imageName, onSave, onClos
         setRulerMode(true);
         fabricCanvas.isDrawingMode = false;
         fabricCanvas.selection = false;
-        toast.info(`تم تفعيل أداة القياس - ${config?.mode || 'distance'}`);
+        setMeasurementMode((config?.mode as any) || 'distance');
+        setCalibration(Number(config?.calibration) || 1);
+        toast.info(`تم تفعيل أداة القياس - ${(config?.mode || 'distance')} (المعايرة: ${Number(config?.calibration) || 1} مم/بكسل)`);
         break;
       case 'roi':
         // Region of Interest - add rectangular selection
@@ -187,6 +194,29 @@ export default function MedicalImageEditor({ imageUrl, imageName, onSave, onClos
       case 'magnify':
         handleZoom('in');
         break;
+      case 'histogram': {
+        try {
+          const canvasEl = fabricCanvas.toCanvasElement();
+          const ctx = canvasEl.getContext('2d');
+          if (!ctx) break;
+          const { width, height } = canvasEl;
+          const imgData = ctx.getImageData(0, 0, width, height).data;
+          let sum = 0, count = 0, min = 255, max = 0;
+          for (let i = 0; i < imgData.length; i += 4) {
+            // luminance approximation
+            const lum = 0.299 * imgData[i] + 0.587 * imgData[i+1] + 0.114 * imgData[i+2];
+            sum += lum; count++;
+            if (lum < min) min = lum;
+            if (lum > max) max = lum;
+          }
+          const avg = sum / count;
+          toast.success(`Histogram: avg ${avg.toFixed(1)}, min ${min.toFixed(0)}, max ${max.toFixed(0)}`);
+        } catch (e) {
+          console.error(e);
+          toast.error('تعذر حساب الهستوغرام');
+        }
+        break;
+      }
       default:
         console.log('أداة غير معروفة:', tool);
     }
@@ -246,6 +276,75 @@ export default function MedicalImageEditor({ imageUrl, imageName, onSave, onClos
     fabricCanvas.renderAll();
     toast.success('تم إضافة العلامة المرجعية');
   };
+
+  // Ruler interactions
+  useEffect(() => {
+    if (!fabricCanvas) return;
+
+    const handler = (opt: any) => {
+      if (!rulerMode) return;
+      const pointer = fabricCanvas.getPointer(opt.e);
+      setMeasurementPoints(prev => {
+        const pts = [...prev, { x: pointer.x, y: pointer.y }];
+        // Distance mode: two points
+        if (measurementMode === 'distance' && pts.length === 2) {
+          const [p1, p2] = pts;
+          const line = new Line([p1.x, p1.y, p2.x, p2.y], {
+            stroke: activeColor,
+            strokeWidth: 2,
+            selectable: true,
+          });
+          const lengthPx = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+          const lengthMm = lengthPx * calibration;
+          const midX = (p1.x + p2.x) / 2;
+          const midY = (p1.y + p2.y) / 2;
+          const label = new FabricText(`${lengthMm.toFixed(2)} mm`, {
+            left: midX + 6,
+            top: midY + 6,
+            fontSize: 14,
+            fill: activeColor,
+            backgroundColor: '#ffffffaa',
+          });
+          fabricCanvas.add(line, label);
+          fabricCanvas.renderAll();
+          toast.success(`الطول: ${lengthMm.toFixed(2)} مم`);
+          return [];
+        }
+        // Angle mode: three points p1, p2 (vertex), p3
+        if (measurementMode === 'angle' && pts.length === 3) {
+          const [p1, p2, p3] = pts;
+          const line1 = new Line([p2.x, p2.y, p1.x, p1.y], { stroke: activeColor, strokeWidth: 2 });
+          const line2 = new Line([p2.x, p2.y, p3.x, p3.y], { stroke: activeColor, strokeWidth: 2 });
+          const v1x = p1.x - p2.x, v1y = p1.y - p2.y;
+          const v2x = p3.x - p2.x, v2y = p3.y - p2.y;
+          const dot = v1x * v2x + v1y * v2y;
+          const m1 = Math.hypot(v1x, v1y);
+          const m2 = Math.hypot(v2x, v2y);
+          const angle = Math.acos(Math.min(1, Math.max(-1, dot / (m1 * m2 || 1)))) * (180 / Math.PI);
+          const label = new FabricText(`${angle.toFixed(1)}°`, {
+            left: p2.x + 6,
+            top: p2.y + 6,
+            fontSize: 14,
+            fill: activeColor,
+            backgroundColor: '#ffffffaa',
+          });
+          fabricCanvas.add(line1, line2, label);
+          fabricCanvas.renderAll();
+          toast.success(`الزاوية: ${angle.toFixed(1)}°`);
+          return [];
+        }
+        return pts;
+      });
+    };
+
+    fabricCanvas.on('mouse:down', handler);
+    rulerHandlerRef.current = handler;
+    return () => {
+      if (rulerHandlerRef.current) {
+        fabricCanvas.off('mouse:down', rulerHandlerRef.current);
+      }
+    };
+  }, [fabricCanvas, rulerMode, measurementMode, calibration, activeColor]);
 
   // Save canvas state to history
   const saveToHistory = useCallback((canvas: FabricCanvas) => {
@@ -359,7 +458,8 @@ export default function MedicalImageEditor({ imageUrl, imageName, onSave, onClos
     
     setZoom(newZoom);
     const zoomLevel = newZoom / 100;
-    fabricCanvas.setZoom(zoomLevel);
+    const center = { x: (fabricCanvas.getWidth?.() || fabricCanvas.width || 0) / 2, y: (fabricCanvas.getHeight?.() || fabricCanvas.height || 0) / 2 } as any;
+    (fabricCanvas as any).zoomToPoint(center, zoomLevel);
     fabricCanvas.renderAll();
   };
 
@@ -728,7 +828,9 @@ export default function MedicalImageEditor({ imageUrl, imageName, onSave, onClos
                       onValueChange={(value) => {
                         setZoom(value[0]);
                         if (fabricCanvas) {
-                          fabricCanvas.setZoom(value[0] / 100);
+                          const zoomLevel = value[0] / 100;
+                          const center = { x: (fabricCanvas.getWidth?.() || fabricCanvas.width || 0) / 2, y: (fabricCanvas.getHeight?.() || fabricCanvas.height || 0) / 2 } as any;
+                          (fabricCanvas as any).zoomToPoint(center, zoomLevel);
                           fabricCanvas.renderAll();
                         }
                       }}
