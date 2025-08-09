@@ -43,6 +43,7 @@ import SuperAdminSettings from "./pages/superadmin/SuperAdminSettings";
 import SuperAdminUserCleanup from "./pages/superadmin/SuperAdminUserCleanup";
 import ApprovedDentistDashboard from "./pages/ApprovedDentistDashboard";
 import NotFound from "./pages/NotFound";
+import SystemBlueprint from "./pages/SystemBlueprint";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -105,6 +106,7 @@ const App = () => (
           <Route path="/super-admin/user-cleanup" element={<SuperAdminUserCleanup />} />
           <Route path="/approved-dentist" element={<ApprovedDentistDashboard />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="/blueprint" element={<SystemBlueprint />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
            </BrowserRouter>

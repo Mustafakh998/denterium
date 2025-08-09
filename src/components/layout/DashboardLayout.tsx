@@ -28,6 +28,7 @@ import {
   TrendingUp,
   CreditCard,
   ShieldCheck,
+  Network,
 } from "lucide-react";
 
 interface DashboardLayoutProps {
@@ -59,6 +60,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { icon: Heart, label: "التواصل", href: "/communication" },
     { icon: ShieldCheck, label: "الموردين", href: "/suppliers" },
     { icon: CreditCard, label: "الاشتراك", href: "/subscription" },
+    { icon: Network, label: "المخطط العام", href: "/blueprint" },
     { icon: Settings, label: "الإعدادات", href: "/settings" },
   ];
 
