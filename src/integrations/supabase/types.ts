@@ -125,6 +125,51 @@ export type Database = {
         }
         Relationships: []
       }
+      dentist_licenses: {
+        Row: {
+          attachment_url: string | null
+          clinic_id: string | null
+          created_at: string
+          expiry_date: string | null
+          id: string
+          issue_date: string | null
+          issuer: string | null
+          license_number: string | null
+          license_type: string
+          notes: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attachment_url?: string | null
+          clinic_id?: string | null
+          created_at?: string
+          expiry_date?: string | null
+          id?: string
+          issue_date?: string | null
+          issuer?: string | null
+          license_number?: string | null
+          license_type: string
+          notes?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          attachment_url?: string | null
+          clinic_id?: string | null
+          created_at?: string
+          expiry_date?: string | null
+          id?: string
+          issue_date?: string | null
+          issuer?: string | null
+          license_number?: string | null
+          license_type?: string
+          notes?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       invoices: {
         Row: {
           clinic_id: string | null
