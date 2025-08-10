@@ -24,6 +24,7 @@ interface PrescriptionTemplateProps {
     address?: string;
     phone?: string;
     email?: string;
+    logo_url?: string;
   };
   dentist: {
     first_name: string;
@@ -52,8 +53,13 @@ export default function PrescriptionTemplate({
       <div className="border-4 border-primary/20 rounded-lg p-6 mb-6 bg-gradient-to-br from-primary/5 to-background">
         <div className="text-center space-y-4">
           <div className="flex items-center justify-center space-x-reverse space-x-4">
-            <div className="h-16 w-16 bg-primary/10 rounded-full flex items-center justify-center">
-              <span className="text-2xl">🦷</span>
+            <div className="h-16 w-16 bg-primary/10 rounded-full flex items-center justify-center overflow-hidden">
+              {clinic.logo_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={clinic.logo_url} alt="شعار العيادة" className="h-full w-full object-contain" />
+              ) : (
+                <span className="text-2xl">🦷</span>
+              )}
             </div>
             <div>
               <h1 className="text-3xl font-bold text-primary">{clinic.name}</h1>

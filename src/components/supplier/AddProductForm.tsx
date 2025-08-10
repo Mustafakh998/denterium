@@ -29,6 +29,7 @@ export default function AddProductForm({ onProductAdded, trigger }: AddProductFo
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [images, setImages] = useState<File[]>([]);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -117,20 +118,37 @@ export default function AddProductForm({ onProductAdded, trigger }: AddProductFo
         is_active: formData.is_active
       };
 
-      const { error } = await supabase
+      const { data: inserted, error } = await supabase
         .from('products')
-        .insert(productData);
+        .insert(productData)
+        .select('id')
+        .single();
 
       if (error) throw error;
 
-      toast({
-        title: "Success",
-        description: "Product added successfully",
-      });
+      // Upload images if any
+      if (images.length > 0 && inserted) {
+        const urls: string[] = [];
+        for (const file of images) {
+          const ext = file.name.split('.').pop() || 'png';
+          const path = `${supplierId}/${inserted.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+          const { error: upErr } = await supabase.storage.from('product-images').upload(path, file);
+          if (!upErr) {
+            const { data: pub } = supabase.storage.from('product-images').getPublicUrl(path);
+            if (pub?.publicUrl) urls.push(pub.publicUrl);
+          }
+        }
+        if (urls.length > 0) {
+          await supabase.from('products').update({ images: urls }).eq('id', inserted.id);
+        }
+      }
 
+      toast({ title: 'Success', description: 'Product added successfully' });
       resetForm();
+      setImages([]);
       setOpen(false);
       onProductAdded?.();
+
     } catch (error: any) {
       console.error('Error adding product:', error);
       toast({
@@ -390,6 +408,13 @@ export default function AddProductForm({ onProductAdded, trigger }: AddProductFo
                 <Label htmlFor="is_active">نشط</Label>
               </div>
             </div>
+          </div>
+
+          {/* Product Images */}
+          <div className="space-y-2">
+            <Label htmlFor="product_images">صور المنتج</Label>
+            <Input id="product_images" type="file" accept="image/*" multiple onChange={(e) => setImages(Array.from(e.target.files || []))} />
+            <p className="text-xs text-muted-foreground">يمكنك رفع عدة صور. سيتم حفظها في النظام.</p>
           </div>
 
           <div className="flex justify-end space-x-2">

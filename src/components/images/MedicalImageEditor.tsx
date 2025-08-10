@@ -357,22 +357,120 @@ export default function MedicalImageEditor({ imageUrl, imageName, onSave, onClos
     setHistoryIndex(prev => prev + 1);
   }, [historyIndex]);
 
-  // Apply image adjustments (simplified for v6)
+  // Apply image adjustments using offscreen processing
   useEffect(() => {
     if (!fabricCanvas || !originalImage) return;
 
-    // Note: Fabric v6 has different filter implementation
-    // For now, we'll focus on basic adjustments
-    const objects = fabricCanvas.getObjects();
-    const backgroundImg = objects.find(obj => obj.selectable === false);
-    
-    if (backgroundImg) {
-      // Apply basic opacity/brightness simulation
-      backgroundImg.set({
-        opacity: 1 + (brightness / 200), // Simplified brightness
-      });
-      fabricCanvas.renderAll();
-    }
+    const apply = async () => {
+      try {
+        const off = document.createElement('canvas');
+        off.width = originalImage.width;
+        off.height = originalImage.height;
+        const ctx = off.getContext('2d');
+        if (!ctx) return;
+        ctx.drawImage(originalImage, 0, 0);
+        let imgData = ctx.getImageData(0, 0, off.width, off.height);
+        const data = imgData.data;
+
+        // Parameters
+        const b = brightness / 100; // -1..1
+        const c = contrast / 100;   // -1..1
+        const s = saturation / 100; // -1..1
+
+        // Precompute contrast factor
+        const cf = (1 + c);
+        const intercept = 128 * (1 - cf);
+
+        for (let i = 0; i < data.length; i += 4) {
+          // Apply brightness & contrast on RGB
+          let r = data[i];
+          let g = data[i + 1];
+          let bch = data[i + 2];
+
+          // Brightness
+          r = r + 255 * b;
+          g = g + 255 * b;
+          bch = bch + 255 * b;
+
+          // Contrast
+          r = r * cf + intercept;
+          g = g * cf + intercept;
+          bch = bch * cf + intercept;
+
+          // Saturation (convert to HSL approx)
+          const max = Math.max(r, g, bch);
+          const min = Math.min(r, g, bch);
+          const l = (max + min) / 2 / 255;
+          let sat = (max - min) / 255;
+          sat = sat + sat * s;
+          // Simple rescale back (approximation)
+          const avg = (r + g + bch) / 3;
+          r = avg + (r - avg) * (1 + s);
+          g = avg + (g - avg) * (1 + s);
+          bch = avg + (bch - avg) * (1 + s);
+
+          data[i] = Math.max(0, Math.min(255, r));
+          data[i + 1] = Math.max(0, Math.min(255, g));
+          data[i + 2] = Math.max(0, Math.min(255, bch));
+        }
+
+        // Sharpness via convolution kernel if needed
+        if (sharpness !== 0) {
+          const k = sharpness / 100; // -1..1
+          const w = off.width, h = off.height;
+          const src = new Uint8ClampedArray(data);
+          const idx = (x: number, y: number) => (y * w + x) * 4;
+          const applyAt = (x: number, y: number, channel: number) => {
+            const center = src[idx(x, y) + channel];
+            let sum = 0;
+            let neighbors = 0;
+            for (let dy = -1; dy <= 1; dy++) {
+              for (let dx = -1; dx <= 1; dx++) {
+                if (dx === 0 && dy === 0) continue;
+                const nx = x + dx, ny = y + dy;
+                if (nx >= 0 && nx < w && ny >= 0 && ny < h) {
+                  sum += src[idx(nx, ny) + channel];
+                  neighbors++;
+                }
+              }
+            }
+            const blur = sum / (neighbors || 1);
+            return center + (center - blur) * (k * 2);
+          };
+          for (let y = 1; y < h - 1; y++) {
+            for (let x = 1; x < w - 1; x++) {
+              for (let ch = 0; ch < 3; ch++) {
+                const v = Math.max(0, Math.min(255, applyAt(x, y, ch)));
+                data[idx(x, y) + ch] = v;
+              }
+            }
+          }
+        }
+
+        ctx.putImageData(imgData, 0, 0);
+        const dataUrl = off.toDataURL('image/png');
+
+        // Replace background image object
+        const objects = fabricCanvas.getObjects();
+        const bg = objects.find(obj => obj.selectable === false);
+        const newImg = await FabricImage.fromURL(dataUrl);
+        newImg.set({
+          scaleX: (fabricCanvas.width! / originalImage.width),
+          scaleY: (fabricCanvas.height! / originalImage.height),
+          selectable: false,
+          evented: false,
+        });
+        if (bg) fabricCanvas.remove(bg);
+        fabricCanvas.add(newImg);
+        fabricCanvas.sendObjectToBack(newImg);
+        fabricCanvas.renderAll();
+      } catch (e) {
+        console.error('Adjustment failed', e);
+      }
+    };
+
+    const t = setTimeout(apply, 150);
+    return () => clearTimeout(t);
   }, [brightness, contrast, saturation, sharpness, fabricCanvas, originalImage]);
 
   // Tool handlers
