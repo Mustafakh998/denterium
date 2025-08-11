@@ -20,6 +20,7 @@ import {
 import AddProductForm from '@/components/supplier/AddProductForm';
 import SupplierLayout from '@/components/layout/SupplierLayout';
 import { FibPaymentDialog } from '@/components/billing/FibPaymentDialog';
+import { ensureSupplierExists } from '@/utils/supplier';
 
 interface SupplierData {
   id: string;
@@ -68,6 +69,7 @@ export default function SupplierDashboard() {
 
   const fetchSupplierData = async () => {
     try {
+      // Try to get existing supplier row for this user
       const { data, error } = await supabase
         .from('suppliers')
         .select('*')
@@ -75,7 +77,23 @@ export default function SupplierDashboard() {
         .maybeSingle();
 
       if (error) throw error;
-      setSupplier(data);
+
+      if (!data) {
+        // Create supplier record if missing
+        const createdId = await ensureSupplierExists(supabase, user);
+        if (createdId) {
+          const { data: created } = await supabase
+            .from('suppliers')
+            .select('*')
+            .eq('id', createdId)
+            .maybeSingle();
+          setSupplier(created);
+        } else {
+          setSupplier(null);
+        }
+      } else {
+        setSupplier(data);
+      }
     } catch (error) {
       console.error('Error fetching supplier data:', error);
     }
@@ -150,7 +168,21 @@ export default function SupplierDashboard() {
         .limit(1)
         .maybeSingle();
 
-      if (data?.plan && data?.status === 'approved') setCurrentPlan(data.plan as any);
+      if (data?.plan && data?.status === 'approved') {
+        setCurrentPlan(data.plan as any);
+        // Ensure supplier is marked active when subscription is approved
+        const { data: sRow } = await supabase
+          .from('suppliers')
+          .select('is_active')
+          .eq('id', supplierData.id)
+          .maybeSingle();
+        if (sRow && sRow.is_active === false) {
+          await supabase.from('suppliers').update({ is_active: true }).eq('id', supplierData.id);
+          setSupplier((prev) => (prev ? { ...prev, is_active: true } as SupplierData : prev));
+        }
+      } else {
+        setCurrentPlan(null);
+      }
     } catch (e) {
       console.error('Error fetching subscription', e);
     }
