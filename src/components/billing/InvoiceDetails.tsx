@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Calendar, 
   Download, 
@@ -45,7 +46,8 @@ interface InvoiceDetailsProps {
 }
 
 export default function InvoiceDetails({ invoice }: InvoiceDetailsProps) {
-  const { toast } = useToast();
+const { toast } = useToast();
+const { profile } = useAuth();
   const getStatusColor = (status: string) => {
     switch (status) {
       case "paid":
@@ -139,14 +141,19 @@ export default function InvoiceDetails({ invoice }: InvoiceDetailsProps) {
     try {
       const { generateInvoicePDF } = await import('@/components/billing/InvoicePDF');
       
-      // Get clinic data
-      const { data: clinic, error: clinicError } = await supabase
-        .from('clinics')
-        .select('name, address, phone, email, logo_url')
-        .eq('id', (window as any).currentClinicId || 'current-clinic-id') // This would come from auth context
-        .single();
-
-      if (clinicError) throw clinicError;
+// Get clinic data using authenticated profile
+const clinicId = (profile as any)?.clinic_id;
+let clinic: any = null;
+if (clinicId) {
+  const { data, error } = await supabase
+    .from('clinics')
+    .select('name, address, phone, email, logo_url')
+    .eq('id', clinicId)
+    .maybeSingle();
+  if (error) console.warn('Clinic fetch error:', error);
+  clinic = data;
+}
+const safeClinic = clinic || { name: 'عيادتي', address: '', phone: '', email: '', logo_url: '' };
 
       const patient = {
         first_name: invoice.patient_first_name,
@@ -154,7 +161,7 @@ export default function InvoiceDetails({ invoice }: InvoiceDetailsProps) {
         phone: invoice.patient_phone
       };
 
-      await generateInvoicePDF({ invoice, patient, clinic });
+      await generateInvoicePDF({ invoice, patient, clinic: safeClinic });
       
       toast({
         title: "تم تحميل الفاتورة",
@@ -173,18 +180,24 @@ export default function InvoiceDetails({ invoice }: InvoiceDetailsProps) {
   const handlePrint = async () => {
     try {
       const { generateInvoicePDF } = await import('@/components/billing/InvoicePDF');
-      const { data: clinic, error: clinicError } = await supabase
-        .from('clinics')
-        .select('name, address, phone, email, logo_url')
-        .eq('id', (window as any).currentClinicId || 'current-clinic-id')
-        .single();
-      if (clinicError) throw clinicError;
+      const clinicId = (profile as any)?.clinic_id;
+      let clinic: any = null;
+      if (clinicId) {
+        const { data, error } = await supabase
+          .from('clinics')
+          .select('name, address, phone, email, logo_url')
+          .eq('id', clinicId)
+          .maybeSingle();
+        if (error) console.warn('Clinic fetch error:', error);
+        clinic = data;
+      }
+      const safeClinic = clinic || { name: 'عيادتي', address: '', phone: '', email: '', logo_url: '' };
       const patient = {
         first_name: invoice.patient_first_name,
         last_name: invoice.patient_last_name,
         phone: invoice.patient_phone
       };
-      await generateInvoicePDF({ invoice, patient, clinic }, { action: 'print' });
+      await generateInvoicePDF({ invoice, patient, clinic: safeClinic }, { action: 'print' });
     } catch (e) {
       console.error('Error printing invoice:', e);
       window.print();
