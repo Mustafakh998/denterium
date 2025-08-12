@@ -46,12 +46,12 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
                 <AlertTriangle className="h-12 w-12 text-red-500" />
               </div>
               <CardTitle className="text-xl text-red-600 dark:text-red-400">
-                حدث خطأ غير متوقع
+                An Unexpected Error Occurred
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-gray-600 dark:text-gray-400 text-center">
-                نعتذر، حدث خطأ أثناء تحميل التطبيق. يرجى المحاولة مرة أخرى.
+                Sorry, an error occurred while loading the application. Please try again.
               </p>
               
               {this.state.error && (
@@ -65,14 +65,14 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
               <div className="flex flex-col gap-3">
                 <Button onClick={this.resetError} className="w-full">
                   <RefreshCw className="h-4 w-4 ml-2" />
-                  المحاولة مرة أخرى
+                  Try Again
                 </Button>
                 <Button 
                   variant="outline" 
                   onClick={() => window.location.reload()}
                   className="w-full"
                 >
-                  إعادة تحميل الصفحة
+                  Reload Page
                 </Button>
               </div>
             </CardContent>
@@ -94,14 +94,14 @@ export const SimpleErrorFallback: React.FC<{ error?: Error; resetError: () => vo
     <div className="flex items-center gap-2 mb-2">
       <AlertTriangle className="h-5 w-5 text-red-500" />
       <h3 className="text-sm font-semibold text-red-700 dark:text-red-300">
-        خطأ في التطبيق
+        Application Error
       </h3>
     </div>
     <p className="text-sm text-red-600 dark:text-red-400 mb-3">
-      {error?.message || 'حدث خطأ غير متوقع'}
+      {error?.message || 'An unexpected error occurred'}
     </p>
     <Button size="sm" onClick={resetError}>
-      المحاولة مرة أخرى
+      Try Again
     </Button>
   </div>
 );

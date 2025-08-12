@@ -68,47 +68,46 @@ const App = () => (
                 v7_relativeSplatPath: true,
               }}
             >
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/patients" element={<Patients />} />
-            <Route path="/appointments" element={<Appointments />} />
-            <Route path="/treatments" element={<Treatments />} />
-            <Route path="/images" element={<MedicalImages />} />
-            <Route path="/billing" element={<Billing />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/staff" element={<Staff />} />
-            <Route path="/reports" element={<Reports />} />
-            <Route path="/features" element={<Features />} />
-            <Route path="/subscription" element={<Subscription />} />
-            <Route path="/communication" element={<Communication />} />
-            <Route path="/inventory" element={<Inventory />} />
-            <Route path="/backup" element={<Backup />} />
-            <Route path="/training" element={<Training />} />
-          <Route path="/supplier-dashboard" element={<SupplierDashboard />} />
-          <Route path="/supplier-inventory" element={<InventoryManagement />} />
-          <Route path="/supplier-payments" element={<PendingPayments />} />
-          <Route path="/supplier-settings" element={<PaymentSettings />} />
-          <Route path="/supplier-orders" element={<OrderManagement />} />
-           <Route path="/suppliers" element={<Suppliers />} />
-            <Route path="/create-clinic" element={<CreateClinic />} />
-            <Route path="/create-super-admin" element={<CreateSuperAdmin />} />
-            <Route path="/dev-tools" element={<DevTools />} />
-            <Route path="/super-admin-auth" element={<SuperAdminAuth />} />
-            <Route path="/super-admin-dashboard" element={<SuperAdminManagement />} />
-          <Route path="/super-admin/users" element={<SuperAdminUsers />} />
-          <Route path="/super-admin/payments" element={<SuperAdminPayments />} />
-          <Route path="/super-admin/data" element={<SuperAdminData />} />
-          <Route path="/super-admin/clinics" element={<SuperAdminClinics />} />
-          <Route path="/super-admin/subscriptions" element={<SuperAdminSubscriptions />} />
-          <Route path="/super-admin/reports" element={<SuperAdminReports />} />
-          <Route path="/super-admin/settings" element={<SuperAdminSettings />} />
-          <Route path="/super-admin/user-cleanup" element={<SuperAdminUserCleanup />} />
-          <Route path="/approved-dentist" element={<ApprovedDentistDashboard />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="/blueprint" element={<SystemBlueprint />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/patients" element={<Patients />} />
+                <Route path="/appointments" element={<Appointments />} />
+                <Route path="/treatments" element={<Treatments />} />
+                <Route path="/images" element={<MedicalImages />} />
+                <Route path="/billing" element={<Billing />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/staff" element={<Staff />} />
+                <Route path="/reports" element={<Reports />} />
+                <Route path="/features" element={<Features />} />
+                <Route path="/subscription" element={<Subscription />} />
+                <Route path="/communication" element={<Communication />} />
+                <Route path="/inventory" element={<Inventory />} />
+                <Route path="/backup" element={<Backup />} />
+                <Route path="/training" element={<Training />} />
+                <Route path="/supplier-dashboard" element={<SupplierDashboard />} />
+                <Route path="/supplier-inventory" element={<InventoryManagement />} />
+                <Route path="/supplier-payments" element={<PendingPayments />} />
+                <Route path="/supplier-settings" element={<PaymentSettings />} />
+                <Route path="/supplier-orders" element={<OrderManagement />} />
+                <Route path="/suppliers" element={<Suppliers />} />
+                <Route path="/create-clinic" element={<CreateClinic />} />
+                <Route path="/create-super-admin" element={<CreateSuperAdmin />} />
+                <Route path="/dev-tools" element={<DevTools />} />
+                <Route path="/super-admin-auth" element={<SuperAdminAuth />} />
+                <Route path="/super-admin-dashboard" element={<SuperAdminManagement />} />
+                <Route path="/super-admin/users" element={<SuperAdminUsers />} />
+                <Route path="/super-admin/payments" element={<SuperAdminPayments />} />
+                <Route path="/super-admin/data" element={<SuperAdminData />} />
+                <Route path="/super-admin/clinics" element={<SuperAdminClinics />} />
+                <Route path="/super-admin/subscriptions" element={<SuperAdminSubscriptions />} />
+                <Route path="/super-admin/reports" element={<SuperAdminReports />} />
+                <Route path="/super-admin/settings" element={<SuperAdminSettings />} />
+                <Route path="/super-admin/user-cleanup" element={<SuperAdminUserCleanup />} />
+                <Route path="/approved-dentist" element={<ApprovedDentistDashboard />} />
+                <Route path="/blueprint" element={<SystemBlueprint />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
            </BrowserRouter>
          </TooltipProvider>
        </AuthProvider>

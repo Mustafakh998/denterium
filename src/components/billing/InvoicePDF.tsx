@@ -67,7 +67,13 @@ export const generateInvoicePDF = async ({ invoice, patient, clinic }: InvoicePD
 
     const fileName = `invoice-${invoice.invoice_number || invoice.id.slice(0, 8)}.pdf`;
     if (options?.action === 'print') {
-      try { (pdf as any).autoPrint && (pdf as any).autoPrint(); } catch {}
+      try { 
+        if (typeof (pdf as any).autoPrint === 'function') {
+          (pdf as any).autoPrint(); 
+        }
+      } catch (e) {
+        console.warn('Auto-print not supported:', e);
+      }
       const url = pdf.output('bloburl');
       window.open(url, '_blank');
     } else {

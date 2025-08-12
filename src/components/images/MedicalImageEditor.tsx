@@ -78,10 +78,14 @@ export default function MedicalImageEditor({ imageUrl, imageName, onSave, onClos
   useEffect(() => {
     if (!canvasRef.current || !imageUrl) return;
 
+    let mounted = true;
+    
     const loadImage = () => {
       const img = new Image();
       img.crossOrigin = "anonymous";
       img.onload = () => {
+        if (!mounted) return;
+        
         setOriginalImage(img);
         
         // Calculate canvas size to fit the image
@@ -138,6 +142,7 @@ export default function MedicalImageEditor({ imageUrl, imageName, onSave, onClos
       };
       
       img.onerror = () => {
+        if (!mounted) return;
         toast.error("فشل في تحميل الصورة");
       };
       
@@ -147,11 +152,12 @@ export default function MedicalImageEditor({ imageUrl, imageName, onSave, onClos
     loadImage();
 
     return () => {
+      mounted = false;
       if (fabricCanvas) {
         fabricCanvas.dispose();
       }
     };
-  }, [imageUrl]);
+  }, [imageUrl, fabricCanvas]);
 
   // Handle diagnostic tool selection
   const handleDiagnosticTool = useCallback((tool: string, config?: any) => {

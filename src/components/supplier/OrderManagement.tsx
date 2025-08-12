@@ -67,6 +67,69 @@ export default function OrderManagement() {
     }
   }, [user]);
 
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return <Clock className="h-4 w-4" />;
+      case 'processing':
+        return <RefreshCw className="h-4 w-4" />;
+      case 'shipped':
+        return <Package className="h-4 w-4" />;
+      case 'delivered':
+        return <CheckCircle className="h-4 w-4" />;
+      case 'cancelled':
+        return <XCircle className="h-4 w-4" />;
+      default:
+        return <AlertCircle className="h-4 w-4" />;
+    }
+  };
+
+  const getStatusVariant = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return 'secondary' as const;
+      case 'processing':
+        return 'default' as const;
+      case 'shipped':
+        return 'default' as const;
+      case 'delivered':
+        return 'default' as const;
+      case 'cancelled':
+        return 'destructive' as const;
+      default:
+        return 'secondary' as const;
+    }
+  };
+
+  const updateOrderStatus = async (orderId: string, status: string) => {
+    try {
+      const { error } = await supabase
+        .from('supplier_orders')
+        .update({ 
+          status,
+          updated_at: new Date().toISOString(),
+          ...(status === 'delivered' && { delivered_at: new Date().toISOString() })
+        })
+        .eq('id', orderId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: `Order status updated to ${status}`,
+      });
+
+      fetchOrders();
+    } catch (error) {
+      console.error('Error updating order status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update order status",
+        variant: "destructive",
+      });
+    }
+  };
+
   const fetchOrders = async () => {
     try {
       const { data: supplierData } = await supabase
@@ -105,6 +168,7 @@ export default function OrderManagement() {
         description: "Failed to fetch orders",
         variant: "destructive",
       });
+      setOrders([]);
     } finally {
       setLoading(false);
     }

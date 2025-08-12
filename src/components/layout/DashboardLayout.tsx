@@ -41,7 +41,16 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const location = useLocation();
 
   const handleRefreshProfile = async () => {
-    await refreshProfile();
+    try {
+      await refreshProfile();
+    } catch (error) {
+      console.error('Error refreshing profile:', error);
+      toast({
+        title: "خطأ في تحديث الملف الشخصي",
+        description: "حدث خطأ أثناء تحديث بيانات الملف الشخصي",
+        variant: "destructive",
+      });
+    }
   };
 
   const getInitials = (firstName?: string, lastName?: string) => {

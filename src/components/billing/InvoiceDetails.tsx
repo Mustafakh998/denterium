@@ -141,19 +141,19 @@ const { profile } = useAuth();
     try {
       const { generateInvoicePDF } = await import('@/components/billing/InvoicePDF');
       
-// Get clinic data using authenticated profile
-const clinicId = (profile as any)?.clinic_id;
-let clinic: any = null;
-if (clinicId) {
-  const { data, error } = await supabase
-    .from('clinics')
-    .select('name, address, phone, email, logo_url')
-    .eq('id', clinicId)
-    .maybeSingle();
-  if (error) console.warn('Clinic fetch error:', error);
-  clinic = data;
-}
-const safeClinic = clinic || { name: 'عيادتي', address: '', phone: '', email: '', logo_url: '' };
+      // Get clinic data using authenticated profile
+      const clinicId = (profile as any)?.clinic_id;
+      let clinic: any = null;
+      if (clinicId) {
+        const { data, error } = await supabase
+          .from('clinics')
+          .select('name, address, phone, email, logo_url')
+          .eq('id', clinicId)
+          .maybeSingle();
+        if (error) console.warn('Clinic fetch error:', error);
+        clinic = data;
+      }
+      const safeClinic = clinic || { name: 'عيادتي', address: '', phone: '', email: '', logo_url: '' };
 
       const patient = {
         first_name: invoice.patient_first_name,
@@ -200,6 +200,11 @@ const safeClinic = clinic || { name: 'عيادتي', address: '', phone: '', ema
       await generateInvoicePDF({ invoice, patient, clinic: safeClinic }, { action: 'print' });
     } catch (e) {
       console.error('Error printing invoice:', e);
+      toast({
+        title: "خطأ في الطباعة",
+        description: "حدث خطأ أثناء طباعة الفاتورة، سيتم استخدام طباعة المتصفح",
+        variant: "destructive",
+      });
       window.print();
     }
   };

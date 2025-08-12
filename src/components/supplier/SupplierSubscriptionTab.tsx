@@ -110,7 +110,7 @@ export default function SupplierSubscriptionTab() {
       setSupplierId(id);
       if (!id) return;
 
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('subscriptions')
         .select('*')
         .eq('supplier_id', id)
@@ -120,6 +120,11 @@ export default function SupplierSubscriptionTab() {
         .limit(1)
         .maybeSingle();
 
+      if (error) {
+        console.error('Error fetching supplier subscription:', error);
+        setSubscription(null);
+        return;
+      }
 
       setSubscription((data as SupplierSubscriptionRow) || null);
     } catch (e) {

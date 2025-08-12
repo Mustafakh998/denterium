@@ -95,6 +95,7 @@ export default function Patients() {
         setPatients([]);
         return;
       }
+      
       setPatients(data || []);
     } catch (error) {
       console.error("Error fetching patients:", error);
@@ -103,6 +104,7 @@ export default function Patients() {
         description: "حدث خطأ أثناء جلب قائمة المرضى",
         variant: "destructive",
       });
+      setPatients([]);
     } finally {
       setLoading(false);
     }

@@ -75,19 +75,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (error) {
         console.error("Error fetching profile:", error);
-        setProfile(null);
+        // Don't set profile to null on error, keep existing profile
+        if (!profile) {
+          setProfile(null);
+        }
       } else {
         console.log('Profile fetched successfully:', data);
         setProfile(data);
       }
     } catch (error) {
       console.error("Error in refreshProfile:", error);
-      setProfile(null);
+      // Don't set profile to null on error, keep existing profile
+      if (!profile) {
+        setProfile(null);
+      }
     } finally {
       setProfileLoading(false);
       isProfileFetchingRef.current = false;
     }
-  }, []); // Empty dependencies to prevent infinite loops
+  }, [profile]); // Include profile to prevent clearing it unnecessarily
 
   useEffect(() => {
     let mounted = true;

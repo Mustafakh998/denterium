@@ -50,13 +50,21 @@ export const AIAnalysisPanel: React.FC<AIAnalysisPanelProps> = ({
         });
       }, 200);
 
-      const { data, error } = await supabase.functions.invoke('analyze-xray', {
-        body: {
-          imageUrl,
-          imageType,
-          analysisType: 'comprehensive'
-        }
-      });
+      let data, error;
+      try {
+        const response = await supabase.functions.invoke('analyze-xray', {
+          body: {
+            imageUrl,
+            imageType,
+            analysisType: 'comprehensive'
+          }
+        });
+        data = response.data;
+        error = response.error;
+      } catch (invokeError) {
+        console.error('Function invoke error:', invokeError);
+        error = invokeError;
+      }
 
       clearInterval(progressInterval);
       setAnalysisProgress(100);
@@ -72,7 +80,7 @@ export const AIAnalysisPanel: React.FC<AIAnalysisPanelProps> = ({
       toast.success('AI analysis completed successfully!');
     } catch (error) {
       console.error('Analysis failed:', error);
-      toast.error('Analysis failed. Please try again.');
+      toast.error(`Analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`);
     } finally {
       setIsAnalyzing(false);
       setTimeout(() => setAnalysisProgress(0), 1000);

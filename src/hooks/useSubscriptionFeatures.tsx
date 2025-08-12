@@ -33,6 +33,11 @@ export const useSubscriptionFeatures = () => {
 
   useEffect(() => {
     const fetchFeatures = async () => {
+      if (!profile) {
+        setLoading(false);
+        return;
+      }
+      
       try {
         let subscription = null;
         
@@ -80,20 +85,30 @@ export const useSubscriptionFeatures = () => {
 
         if (error) {
           console.error('Error fetching subscription features:', error);
+          // Set default features for basic plan on error
+          setFeatures([
+            { feature_name: 'max_patients', is_enabled: true, feature_limit: 50 },
+            { feature_name: 'max_staff', is_enabled: true, feature_limit: 2 },
+            { feature_name: 'max_appointments_per_month', is_enabled: true, feature_limit: 100 }
+          ]);
           return;
         }
 
         setFeatures(planFeatures || []);
       } catch (error) {
         console.error('Error in fetchFeatures:', error);
+        // Set default features on error
+        setFeatures([
+          { feature_name: 'max_patients', is_enabled: true, feature_limit: 50 },
+          { feature_name: 'max_staff', is_enabled: true, feature_limit: 2 },
+          { feature_name: 'max_appointments_per_month', is_enabled: true, feature_limit: 100 }
+        ]);
       } finally {
         setLoading(false);
       }
     };
 
-    if (profile) {
-      fetchFeatures();
-    }
+    fetchFeatures();
   }, [profile]);
 
   const getFeatureLimits = (): SubscriptionLimits => {

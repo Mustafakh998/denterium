@@ -57,6 +57,81 @@ export default function PendingPayments() {
     }
   }, [user]);
 
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return <Clock className="h-4 w-4" />;
+      case 'processing':
+        return <AlertCircle className="h-4 w-4" />;
+      case 'completed':
+        return <CheckCircle className="h-4 w-4" />;
+      case 'failed':
+      case 'cancelled':
+        return <XCircle className="h-4 w-4" />;
+      default:
+        return <Clock className="h-4 w-4" />;
+    }
+  };
+
+  const getStatusVariant = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return 'secondary' as const;
+      case 'processing':
+        return 'default' as const;
+      case 'completed':
+        return 'default' as const;
+      case 'failed':
+      case 'cancelled':
+        return 'destructive' as const;
+      default:
+        return 'secondary' as const;
+    }
+  };
+
+  const updatePaymentStatus = async (paymentId: string, status: string) => {
+    try {
+      setUpdating(true);
+      
+      const updateData: any = {
+        status,
+        updated_at: new Date().toISOString()
+      };
+
+      if (status === 'completed') {
+        updateData.paid_at = new Date().toISOString();
+        updateData.payment_reference = paymentReference;
+        updateData.notes = notes;
+      }
+
+      const { error } = await supabase
+        .from('supplier_pending_payments')
+        .update(updateData)
+        .eq('id', paymentId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: `Payment status updated to ${status}`,
+      });
+
+      fetchPendingPayments();
+      setSelectedPayment(null);
+      setPaymentReference('');
+      setNotes('');
+    } catch (error) {
+      console.error('Error updating payment status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update payment status",
+        variant: "destructive",
+      });
+    } finally {
+      setUpdating(false);
+    }
+  };
+
   const fetchPendingPayments = async () => {
     try {
       const { data: supplierData } = await supabase
@@ -88,6 +163,7 @@ export default function PendingPayments() {
         description: "Failed to fetch pending payments",
         variant: "destructive",
       });
+      setPayments([]);
     } finally {
       setLoading(false);
     }

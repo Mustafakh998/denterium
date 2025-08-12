@@ -63,52 +63,76 @@ export default function DashboardStats() {
 
       try {
         // Fetch total patients
-        const { count: patientsCount } = await supabase
+        const { count: patientsCount, error: patientsError } = await supabase
           .from("patients")
           .select("*", { count: "exact", head: true })
           .eq("clinic_id", profile.clinic_id)
           .eq("is_active", true);
 
+        if (patientsError) {
+          console.error('Error fetching patients count:', patientsError);
+        }
+
         // Fetch today's appointments
         const today = new Date().toISOString().split('T')[0];
-        const { count: todayCount } = await supabase
+        const { count: todayCount, error: appointmentsError } = await supabase
           .from("appointments")
           .select("*", { count: "exact", head: true })
           .eq("clinic_id", profile.clinic_id)
           .gte("appointment_date", `${today}T00:00:00`)
           .lt("appointment_date", `${today}T23:59:59`);
 
+        if (appointmentsError) {
+          console.error('Error fetching appointments count:', appointmentsError);
+        }
+
         // Fetch monthly revenue
         const currentMonth = new Date().toISOString().substring(0, 7);
-        const { data: invoices } = await supabase
+        const { data: invoices, error: invoicesError } = await supabase
           .from("invoices")
           .select("paid_amount")
           .eq("clinic_id", profile.clinic_id)
           .gte("created_at", `${currentMonth}-01`)
           .eq("status", "paid");
 
+        if (invoicesError) {
+          console.error('Error fetching invoices:', invoicesError);
+        }
+
         const monthlyRevenue = invoices?.reduce((sum, invoice) => sum + (invoice.paid_amount || 0), 0) || 0;
 
         // Fetch completed treatments this month
-        const { count: treatmentsCount } = await supabase
+        const { count: treatmentsCount, error: treatmentsError } = await supabase
           .from("treatments")
           .select("*", { count: "exact", head: true })
           .eq("clinic_id", profile.clinic_id)
           .eq("status", "completed")
           .gte("completion_date", `${currentMonth}-01`);
 
+        if (treatmentsError) {
+          console.error('Error fetching treatments count:', treatmentsError);
+        }
+
         // Fetch pending appointments
-        const { count: pendingCount } = await supabase
+        const { count: pendingCount, error: pendingError } = await supabase
           .from("appointments")
           .select("*", { count: "exact", head: true })
           .eq("clinic_id", profile.clinic_id)
           .eq("status", "scheduled");
 
+        if (pendingError) {
+          console.error('Error fetching pending appointments:', pendingError);
+        }
+
         // Fetch total medical images
-        const { count: imagesCount } = await supabase
+        const { count: imagesCount, error: imagesError } = await supabase
           .from("medical_images")
           .select("*", { count: "exact", head: true })
           .eq("clinic_id", profile.clinic_id);
+
+        if (imagesError) {
+          console.error('Error fetching images count:', imagesError);
+        }
 
         setStats({
           totalPatients: patientsCount || 0,
@@ -120,6 +144,15 @@ export default function DashboardStats() {
         });
       } catch (error) {
         console.error("Error fetching stats:", error);
+        // Set default stats on error
+        setStats({
+          totalPatients: 0,
+          todayAppointments: 0,
+          monthlyRevenue: 0,
+          completedTreatments: 0,
+          pendingAppointments: 0,
+          totalImages: 0,
+        });
       }
     };
 

@@ -53,6 +53,7 @@ export default function AddTreatmentForm({ onSuccess }: AddTreatmentFormProps) {
     
     if (!profile?.clinic_id) {
       console.log("No clinic_id available for fetching patients");
+      setPatients([]);
       return;
     }
 
@@ -72,6 +73,7 @@ export default function AddTreatmentForm({ onSuccess }: AddTreatmentFormProps) {
           description: "لم نتمكن من تحميل قائمة المرضى",
           variant: "destructive",
         });
+        setPatients([]);
         return;
       }
       
@@ -84,6 +86,7 @@ export default function AddTreatmentForm({ onSuccess }: AddTreatmentFormProps) {
         description: "حدث خطأ أثناء تحميل قائمة المرضى",
         variant: "destructive",
       });
+      setPatients([]);
     }
   };
 

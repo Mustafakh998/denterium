@@ -34,7 +34,7 @@ export default function Index() {
   // Check if user is a supplier
   useEffect(() => {
     const checkSupplierStatus = async () => {
-      if (user && !profile) {
+      if (user && !profileLoading) {
         try {
           const { data } = await supabase
             .from('suppliers')
@@ -55,7 +55,7 @@ export default function Index() {
     };
 
     checkSupplierStatus();
-  }, [user, profile]);
+  }, [user, profileLoading]);
 
   // Check if user has approved payment but no clinic
   useEffect(() => {
@@ -85,10 +85,26 @@ export default function Index() {
     checkApprovedPayment();
   }, [user, profile]);
 
-  if (loading || profileLoading) {
+  // Add better loading state handling
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+        <div className="flex flex-col items-center space-y-4">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+          <p className="text-gray-600">Loading application...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show profile loading state separately
+  if (profileLoading && user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600"></div>
+          <p className="text-gray-600">Loading profile...</p>
+        </div>
       </div>
     );
   }
