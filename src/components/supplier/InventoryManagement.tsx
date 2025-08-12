@@ -42,7 +42,7 @@ interface Product {
   is_active: boolean;
   created_at: string;
   updated_at: string;
-  category: { name: string } | null;
+  category?: { name: string } | null;
 }
 
 export default function InventoryManagement() {
@@ -70,10 +70,7 @@ export default function InventoryManagement() {
 
       const { data, error } = await supabase
         .from('products')
-        .select(`
-          *,
-          category:product_categories(name)
-        `)
+        .select('*')
         .eq('supplier_id', supplierData.id)
         .order('created_at', { ascending: false });
 

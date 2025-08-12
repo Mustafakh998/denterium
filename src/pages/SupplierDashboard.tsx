@@ -170,15 +170,18 @@ export default function SupplierDashboard() {
 
       if (data?.plan && data?.status === 'approved') {
         setCurrentPlan(data.plan as any);
-        // Ensure supplier is marked active when subscription is approved
+        // Ensure supplier is marked active and verified when subscription is approved
         const { data: sRow } = await supabase
           .from('suppliers')
-          .select('is_active')
+          .select('is_active, verified')
           .eq('id', supplierData.id)
           .maybeSingle();
-        if (sRow && sRow.is_active === false) {
-          await supabase.from('suppliers').update({ is_active: true }).eq('id', supplierData.id);
-          setSupplier((prev) => (prev ? { ...prev, is_active: true } as SupplierData : prev));
+        if (!sRow || sRow.is_active === false || sRow.verified === false) {
+          await supabase
+            .from('suppliers')
+            .update({ is_active: true, verified: true })
+            .eq('id', supplierData.id);
+          setSupplier((prev) => (prev ? { ...prev, is_active: true, verified: true } as SupplierData : prev));
         }
       } else {
         setCurrentPlan(null);
