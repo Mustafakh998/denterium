@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import MedicalImageEditor from "./MedicalImageEditor";
+import { MedicalImageEditor } from "./MedicalImageEditor";
 import { 
   Calendar, 
   Download, 
@@ -312,14 +312,8 @@ export default function ImageDetails({ image }: ImageDetailsProps) {
             </DialogHeader>
             <div className="flex-1 overflow-hidden">
               <MedicalImageEditor
-                imageUrl={image.image_url}
-                imageName={image.title}
-                onClose={() => setShowEditor(false)}
-                onSave={(blob) => {
-                  // TODO: Implement save functionality
-                  console.log("Saving edited image:", blob);
-                  setShowEditor(false);
-                }}
+                image={image}
+                onSave={() => setShowEditor(false)}
               />
             </div>
           </div>

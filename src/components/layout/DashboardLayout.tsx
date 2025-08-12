@@ -45,11 +45,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       await refreshProfile();
     } catch (error) {
       console.error('Error refreshing profile:', error);
-      toast({
-        title: "خطأ في تحديث الملف الشخصي",
-        description: "حدث خطأ أثناء تحديث بيانات الملف الشخصي",
-        variant: "destructive",
-      });
+      console.error('Error refreshing profile:', error);
     }
   };
 
