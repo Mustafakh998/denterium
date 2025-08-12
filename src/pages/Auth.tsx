@@ -148,19 +148,20 @@ export default function Auth() {
           // Create supplier profile
           const { error: supplierError } = await supabase
             .from('suppliers')
-            .insert({
+            .upsert({
               user_id: authData.user.id,
               company_name: companyName,
-              business_license: businessLicense,
-              tax_id: taxId,
-              phone,
+              business_license: businessLicense || null,
+              tax_id: taxId || null,
+              phone: phone || null,
               email,
-              address,
-              city,
-              country,
-              website,
-              description
-            });
+              address: address || null,
+              city: city || null,
+              country: country || null,
+              website: website || null,
+              description: description || null,
+              is_active: true
+            }, { onConflict: 'user_id' });
 
           if (supplierError) throw supplierError;
 

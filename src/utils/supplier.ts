@@ -2,10 +2,12 @@ export async function ensureSupplierExists(supabase: any, user: any, profile?: a
   if (!user?.id) return null;
 
   // Check existing supplier
-  const { data: existing, error: fetchError } = await supabase
+  const { data: existing } = await supabase
     .from('suppliers')
     .select('id')
     .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+    .limit(1)
     .maybeSingle();
 
   if (existing?.id) return existing.id as string;

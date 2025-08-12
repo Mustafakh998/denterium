@@ -170,6 +170,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           .from('suppliers')
           .select('id')
           .eq('user_id', data.user.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
           .maybeSingle();
 
         if (supplierData) {

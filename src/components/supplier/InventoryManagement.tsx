@@ -64,6 +64,8 @@ export default function InventoryManagement() {
         .from('suppliers')
         .select('id')
         .eq('user_id', user?.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
         .maybeSingle();
 
       if (!supplierData) return;

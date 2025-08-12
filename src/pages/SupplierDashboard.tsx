@@ -74,6 +74,8 @@ export default function SupplierDashboard() {
         .from('suppliers')
         .select('*')
         .eq('user_id', user?.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
         .maybeSingle();
 
       if (error) throw error;
@@ -106,6 +108,8 @@ export default function SupplierDashboard() {
         .from('suppliers')
         .select('id, rating')
         .eq('user_id', user?.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
         .maybeSingle();
 
       if (!supplierData) return;
@@ -157,6 +161,8 @@ export default function SupplierDashboard() {
         .from('suppliers')
         .select('id')
         .eq('user_id', user?.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
         .maybeSingle();
       if (!supplierData) return;
 
